@@ -61,11 +61,8 @@ const Login: React.FC = () => {
           </svg>
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-          Iniciar sesión
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
           Accede a tu cuenta del sistema financiero
-        </p>
+        </h2>
       </div>
 
       {/* Formulario de login */}
@@ -184,7 +181,7 @@ const Login: React.FC = () => {
       {/* Footer */}
       <div className="mt-8 text-center">
         <p className="text-xs text-gray-500">
-          Sistema Financiero Lottus Education © 2024
+          Sistema Financiero Lottus Education © 2025
         </p>
         <p className="text-xs text-gray-500 mt-1">
           Versión 2025.v01
