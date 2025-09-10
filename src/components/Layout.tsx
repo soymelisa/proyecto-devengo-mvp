@@ -123,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentSection, onSectionChan
           <div className="absolute bottom-4 left-6 right-6">
             <div className="text-xs text-gray-500 border-t border-gray-200 pt-4">
               <p className="font-medium">Sistema Financiero</p>
-              <p>Versión 2024.01</p>
+              <p>Versión 2025.v01</p>
             </div>
           </div>
         )}

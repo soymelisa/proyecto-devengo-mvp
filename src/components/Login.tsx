@@ -187,7 +187,7 @@ const Login: React.FC = () => {
           Sistema Financiero Lottus Education © 2024
         </p>
         <p className="text-xs text-gray-500 mt-1">
-          Versión 2024.01
+          Versión 2025.v01
         </p>
       </div>
     </div>
