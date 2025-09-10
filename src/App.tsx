@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Login from './components/Login';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
+import ProgramsCatalog from './components/ProgramsCatalog';
 import Projections from './components/Projections';
 import Reports from './components/Reports';
 import Campuses from './components/Campuses';
@@ -51,7 +52,7 @@ function App() {
       case 'dashboard':
         return <Dashboard />;
       case 'programs-catalog':
-        return <ComingSoon title="Catálogo de programas" />;
+        return <ProgramsCatalog />;
       case 'campuses':
         return <Campuses />;
       case 'calendar':
