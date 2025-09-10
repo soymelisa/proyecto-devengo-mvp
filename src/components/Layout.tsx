@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentSection, onSectionChan
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'dashboard', label: 'Resumen', icon: LayoutDashboard },
     { id: 'programs-catalog', label: 'Catálogo de programas', icon: BookOpen },
     { id: 'campuses', label: 'Catálogo de planteles', icon: Building2 },
     { id: 'calendar', label: 'Calendario', icon: Calendar },
