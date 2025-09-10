@@ -7,6 +7,7 @@ import Reports from './components/Reports';
 import Campuses from './components/Campuses';
 import Settings from './components/Settings';
 import HistoricalEnrollment from './components/HistoricalEnrollment';
+import Calendar from './components/Calendar';
 
 function App() {
   const [currentSection, setCurrentSection] = useState('dashboard');
@@ -54,7 +55,7 @@ function App() {
       case 'campuses':
         return <Campuses />;
       case 'calendar':
-        return <ComingSoon title="Calendario" />;
+        return <Calendar />;
       case 'historical-enrollment':
         return <HistoricalEnrollment />;
       case 'projections':

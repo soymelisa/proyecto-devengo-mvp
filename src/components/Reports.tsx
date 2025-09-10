@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Download, Eye, Calendar, BarChart3, TrendingUp, Users } from 'lucide-react';
+import { FileText, Download, Eye, Calendar, BarChart3, TrendingUp, Users, User, Clock } from 'lucide-react';
 
 const Reports: React.FC = () => {
   const [selectedReportType, setSelectedReportType] = useState('financial');
@@ -42,27 +42,96 @@ const Reports: React.FC = () => {
       name: 'Reporte Financiero - Enero 2024',
       type: 'Financiero Consolidado',
       date: '2024-02-01',
+      downloadDate: '2024-02-01 14:30',
       size: '2.8 MB',
       format: 'PDF',
-      status: 'Completado'
+      status: 'Completado',
+      downloadedBy: 'Juan Pérez',
+      userRole: 'Administrador'
     },
     {
       id: 2,
       name: 'Análisis Matrícula - Sem 4 Enero',
       type: 'Análisis de Matrícula',
       date: '2024-01-28',
+      downloadDate: '2024-01-28 09:15',
       size: '1.5 MB',
       format: 'Excel',
-      status: 'Completado'
+      status: 'Completado',
+      downloadedBy: 'María García',
+      userRole: 'Director General'
     },
     {
       id: 3,
       name: 'Proyecciones Q1 2024',
       type: 'Proyecciones vs. Realidad',
       date: '2024-01-31',
+      downloadDate: '2024-01-31 16:45',
       size: '3.2 MB',
       format: 'PDF',
-      status: 'En proceso'
+      status: 'Completado',
+      downloadedBy: 'Carlos López',
+      userRole: 'Finanzas'
+    },
+    {
+      id: 4,
+      name: 'Reporte de Ingresos - Diciembre 2023',
+      type: 'Financiero Consolidado',
+      date: '2024-01-05',
+      downloadDate: '2024-01-05 11:20',
+      size: '2.1 MB',
+      format: 'PDF',
+      status: 'Completado',
+      downloadedBy: 'Ana Martínez',
+      userRole: 'Corporativo'
+    },
+    {
+      id: 5,
+      name: 'Análisis de Retención - Q4 2023',
+      type: 'Análisis de Matrícula',
+      date: '2024-01-10',
+      downloadDate: '2024-01-10 13:55',
+      size: '1.8 MB',
+      format: 'Excel',
+      status: 'Completado',
+      downloadedBy: 'Juan Pérez',
+      userRole: 'Administrador'
+    },
+    {
+      id: 6,
+      name: 'Impacto de Descuentos - Enero 2024',
+      type: 'Impacto de Descuentos',
+      date: '2024-02-05',
+      downloadDate: '2024-02-05 10:30',
+      size: '2.5 MB',
+      format: 'PDF',
+      status: 'Completado',
+      downloadedBy: 'María García',
+      userRole: 'Director General'
+    },
+    {
+      id: 7,
+      name: 'Proyecciones Febrero 2024',
+      type: 'Proyecciones vs. Realidad',
+      date: '2024-02-15',
+      downloadDate: '2024-02-15 15:10',
+      size: '3.0 MB',
+      format: 'Excel',
+      status: 'Completado',
+      downloadedBy: 'Carlos López',
+      userRole: 'Finanzas'
+    },
+    {
+      id: 8,
+      name: 'Análisis Campus Guadalajara - Enero 2024',
+      type: 'Análisis de Matrícula',
+      date: '2024-02-08',
+      downloadDate: '2024-02-08 12:45',
+      size: '1.9 MB',
+      format: 'PDF',
+      status: 'Completado',
+      downloadedBy: 'Ana Martínez',
+      userRole: 'Corporativo'
     }
   ];
 
@@ -172,16 +241,162 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Historial de reportes */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Histórico de descargas */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Reportes Recientes</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Histórico de Reportes Descargados</h2>
+                <div className="text-sm text-gray-500">
+                  {recentReports.length} reportes totales
+                </div>
+              </div>
             </div>
             <div className="p-6">
               <div className="space-y-4">
                 {recentReports.map(report => (
-                  <div key={report.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center space-x-4">
+                  <div key={report.id} className="border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="p-4">
+                      {/* Header del reporte */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-blue-50 rounded-lg">
+                            <FileText className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-gray-900">{report.name}</h3>
+                            <p className="text-sm text-gray-600">{report.type}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            report.status === 'Completado' 
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {report.status}
+                          </span>
+                          
+                          {report.status === 'Completado' && (
+                            <div className="flex items-center space-x-2">
+                              <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button className="p-2 text-gray-400 hover:text-green-600 transition-colors">
+                                <Download className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Información de descarga */}
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-400" />
+                            <div>
+                              <p className="font-medium text-gray-900">{report.downloadedBy}</p>
+                              <p className="text-gray-600">{report.userRole}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Clock className="w-4 h-4 text-gray-400" />
+                            <div>
+                              <p className="text-gray-900">Descargado:</p>
+                              <p className="text-gray-600">{report.downloadDate}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <FileText className="w-4 h-4 text-gray-400" />
+                            <div>
+                              <p className="text-gray-900">{report.format} • {report.size}</p>
+                              <p className="text-gray-600">Generado: {new Date(report.date).toLocaleDateString('es-MX')}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Resumen de actividad */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Resumen de Actividad</h2>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="p-3 bg-blue-50 rounded-lg inline-flex mb-2">
+                    <FileText className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">{recentReports.length}</h3>
+                  <p className="text-gray-600 text-sm">Reportes Descargados</p>
+                  <p className="text-xs text-gray-500 mt-1">Este mes</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="p-3 bg-green-50 rounded-lg inline-flex mb-2">
+                    <Users className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">4</h3>
+                  <p className="text-gray-600 text-sm">Usuarios Activos</p>
+                  <p className="text-xs text-gray-500 mt-1">Con descargas</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="p-3 bg-purple-50 rounded-lg inline-flex mb-2">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">18.2 MB</h3>
+                  <p className="text-gray-600 text-sm">Tamaño Total</p>
+                  <p className="text-xs text-gray-500 mt-1">Descargado</p>
+                </div>
+              </div>
+              
+              {/* Top usuarios */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Usuarios más activos:</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span>Juan Pérez (Administrador)</span>
+                    </div>
+                    <span className="font-medium">2 reportes</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span>María García (Director General)</span>
+                    </div>
+                    <span className="font-medium">2 reportes</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span>Carlos López (Finanzas)</span>
+                    </div>
+                    <span className="font-medium">2 reportes</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Reports;
                       <div className="p-2 bg-blue-50 rounded-lg">
                         <FileText className="w-5 h-5 text-blue-600" />
                       </div>
