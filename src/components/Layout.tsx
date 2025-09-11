@@ -24,6 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentSection, onSectionChan
   const menuItems = [
     { id: 'dashboard', label: 'Resumen', icon: LayoutDashboard },
     { id: 'programs-catalog', label: 'Catálogo de programas', icon: BookOpen },
+    { id: 'brand-catalog', label: 'Catálogo de marca', icon: Building2 },
     { id: 'campuses', label: 'Catálogo de planteles', icon: Building2 },
     { id: 'calendar', label: 'Calendario', icon: Calendar },
     { id: 'historical-enrollment', label: 'Matrícula histórica', icon: History },
