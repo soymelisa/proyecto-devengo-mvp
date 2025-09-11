@@ -55,6 +55,8 @@ const HistoricalEnrollment: React.FC = () => {
     program: 'all',
     modality: 'all',
     brand: 'all'
+  });
+
   // Datos de ejemplo para proyección anual 2026
   const projectionResults2026 = {
     summary: {
@@ -194,8 +196,6 @@ const HistoricalEnrollment: React.FC = () => {
       }
     ]
   };
-
-  });
 
   // Función para calcular resultados detallados
   const calculateDetailedResults = (params: any) => {
@@ -1563,7 +1563,7 @@ const HistoricalEnrollment: React.FC = () => {
                               <p className="text-xl font-bold text-green-900">${(monthData.totals.netRevenue / 1000000).toFixed(2)}M</p>
                             </div>
                           </div>
-        </div>
+
                           {/* Tabla detallada del mes */}
                           <div className="overflow-x-auto">
                             <table className="w-full border border-gray-200 rounded-lg">
@@ -1652,6 +1652,7 @@ const HistoricalEnrollment: React.FC = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
