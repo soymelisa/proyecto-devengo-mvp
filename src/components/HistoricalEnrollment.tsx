@@ -41,6 +41,7 @@ const HistoricalEnrollment: React.FC = () => {
   const [showNewProjection, setShowNewProjection] = useState(false);
   const [showSavedProjections, setShowSavedProjections] = useState(false);
   const [showDetailedResults, setShowDetailedResults] = useState(false);
+  const [activeResultsTab, setActiveResultsTab] = useState('summary');
   
   const [newProjection, setNewProjection] = useState<Partial<ProjectionConfig>>({
     name: '',
@@ -54,6 +55,146 @@ const HistoricalEnrollment: React.FC = () => {
     program: 'all',
     modality: 'all',
     brand: 'all'
+  // Datos de ejemplo para proyección anual 2026
+  const projectionResults2026 = {
+    summary: {
+      totalStudents: 2847,
+      niStudents: 854,
+      riStudents: 1993,
+      totalGrossRevenue: 156800000,
+      totalDiscounts: 18400000,
+      totalNetRevenue: 138400000
+    },
+    monthlyData: [
+      {
+        month: 'Enero',
+        students: { ni: 71, ri: 166, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Febrero',
+        students: { ni: 45, ri: 192, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Marzo',
+        students: { ni: 89, ri: 148, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Abril',
+        students: { ni: 67, ri: 170, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Mayo',
+        students: { ni: 52, ri: 185, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Junio',
+        students: { ni: 78, ri: 159, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      }
+    ]
+  };
+
   });
 
   // Función para calcular resultados detallados
@@ -1246,7 +1387,271 @@ const HistoricalEnrollment: React.FC = () => {
               </div>
             </div>
           )}
+
+        {/* Sección de Resultados - Proyección Anual 2026 */}
+        {activeTab === 'projections' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Resultados - Proyección Anual 2026</h2>
+                  <p className="text-sm text-gray-600 mt-1">Desglose detallado de ingresos y estudiantes proyectados</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setActiveResultsTab('summary')}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      activeResultsTab === 'summary'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Resumen
+                  </button>
+                  <button
+                    onClick={() => setActiveResultsTab('monthly')}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      activeResultsTab === 'monthly'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Detalle Mes a Mes
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {activeResultsTab === 'summary' && (
+                <div>
+                  {/* Resumen Ejecutivo */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                      <h3 className="text-sm font-medium text-blue-700 mb-2">Total Estudiantes</h3>
+                      <p className="text-3xl font-bold text-blue-900">{projectionResults2026.summary.totalStudents.toLocaleString()}</p>
+                      <div className="mt-3 text-sm text-blue-600">
+                        <p>NI: {projectionResults2026.summary.niStudents.toLocaleString()} ({Math.round((projectionResults2026.summary.niStudents / projectionResults2026.summary.totalStudents) * 100)}%)</p>
+                        <p>RI: {projectionResults2026.summary.riStudents.toLocaleString()} ({Math.round((projectionResults2026.summary.riStudents / projectionResults2026.summary.totalStudents) * 100)}%)</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                      <h3 className="text-sm font-medium text-red-700 mb-2">Descuentos Totales</h3>
+                      <p className="text-3xl font-bold text-red-900">${(projectionResults2026.summary.totalDiscounts / 1000000).toFixed(1)}M</p>
+                      <p className="text-sm text-red-600 mt-1">
+                        {Math.round((projectionResults2026.summary.totalDiscounts / projectionResults2026.summary.totalGrossRevenue) * 100)}% del ingreso bruto
+                      </p>
+                    </div>
+
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                      <h3 className="text-sm font-medium text-green-700 mb-2">Ingreso Neto</h3>
+                      <p className="text-3xl font-bold text-green-900">${(projectionResults2026.summary.totalNetRevenue / 1000000).toFixed(1)}M</p>
+                      <p className="text-sm text-green-600 mt-1">
+                        Después de descuentos
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Tabla Resumen Anual */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full border border-gray-200 rounded-lg">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Concepto
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Cantidad/Porcentaje
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Monto
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        <tr className="bg-blue-50">
+                          <td className="px-6 py-4 text-sm font-medium text-blue-900" colSpan={3}>
+                            ESTUDIANTES
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">NI (Nuevo Ingreso)</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">{projectionResults2026.summary.niStudents.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">-</td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">RI (Reingreso)</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">{projectionResults2026.summary.riStudents.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">-</td>
+                        </tr>
+                        <tr className="bg-orange-50">
+                          <td className="px-6 py-4 text-sm font-medium text-orange-900" colSpan={3}>
+                            INGRESOS BRUTOS
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">Inscripciones</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">-</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">${(projectionResults2026.summary.totalGrossRevenue * 0.4 / 1000000).toFixed(1)}M</td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">Colegiaturas</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">-</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">${(projectionResults2026.summary.totalGrossRevenue * 0.6 / 1000000).toFixed(1)}M</td>
+                        </tr>
+                        <tr className="bg-red-50">
+                          <td className="px-6 py-4 text-sm font-medium text-red-900" colSpan={3}>
+                            DESCUENTOS
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">Descuento Inscripciones</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">8%</td>
+                          <td className="px-6 py-4 text-sm text-right text-red-600">${(projectionResults2026.summary.totalDiscounts * 0.4 / 1000000).toFixed(1)}M</td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">Descuento Colegiaturas</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">12%</td>
+                          <td className="px-6 py-4 text-sm text-right text-red-600">${(projectionResults2026.summary.totalDiscounts * 0.6 / 1000000).toFixed(1)}M</td>
+                        </tr>
+                        <tr className="bg-green-50 font-medium">
+                          <td className="px-6 py-4 text-sm text-green-900">INGRESO NETO TOTAL</td>
+                          <td className="px-6 py-4 text-sm text-right text-green-900">-</td>
+                          <td className="px-6 py-4 text-sm text-right text-green-900">${(projectionResults2026.summary.totalNetRevenue / 1000000).toFixed(1)}M</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {activeResultsTab === 'monthly' && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Desglose Mes a Mes - 2026</h3>
+                  
+                  <div className="space-y-8">
+                    {projectionResults2026.monthlyData.map((monthData, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+                          <h4 className="text-md font-semibold text-gray-900">{monthData.month} 2026</h4>
+                        </div>
+                        
+                        <div className="p-6">
+                          {/* Resumen del mes */}
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                              <h5 className="text-xs font-medium text-blue-700 mb-1">Total Estudiantes</h5>
+                              <p className="text-xl font-bold text-blue-900">{monthData.students.total}</p>
+                              <div className="text-xs text-blue-600 mt-1">
+                                <p>NI: {monthData.students.ni} | RI: {monthData.students.ri}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                              <h5 className="text-xs font-medium text-orange-700 mb-1">Ingreso Bruto</h5>
+                              <p className="text-xl font-bold text-orange-900">${(monthData.totals.grossRevenue / 1000000).toFixed(2)}M</p>
+                            </div>
+                            
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                              <h5 className="text-xs font-medium text-red-700 mb-1">Descuentos</h5>
+                              <p className="text-xl font-bold text-red-900">${(monthData.totals.totalDiscount / 1000).toFixed(0)}K</p>
+                            </div>
+                            
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                              <h5 className="text-xs font-medium text-green-700 mb-1">Ingreso Neto</h5>
+                              <p className="text-xl font-bold text-green-900">${(monthData.totals.netRevenue / 1000000).toFixed(2)}M</p>
+                            </div>
+                          </div>
         </div>
+                          {/* Tabla detallada del mes */}
+                          <div className="overflow-x-auto">
+                            <table className="w-full border border-gray-200 rounded-lg">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    Concepto
+                                  </th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    Precio Base
+                                  </th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    % Descuento
+                                  </th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    $ Descuento
+                                  </th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    $ Neto
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                <tr className="bg-blue-50">
+                                  <td className="px-4 py-3 text-sm font-medium text-blue-900" colSpan={5}>
+                                    DESGLOSE DE ESTUDIANTES
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-3 text-sm text-gray-900">NI (Nuevo Ingreso)</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">{monthData.students.ni} estudiantes</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-3 text-sm text-gray-900">RI (Reingreso)</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">{monthData.students.ri} estudiantes</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                </tr>
+                                
+                                <tr className="bg-purple-50">
+                                  <td className="px-4 py-3 text-sm font-medium text-purple-900" colSpan={5}>
+                                    INSCRIPCIONES
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-3 text-sm text-gray-900">Inscripciones</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">${monthData.inscriptions.price.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">{monthData.inscriptions.discountPercent}%</td>
+                                  <td className="px-4 py-3 text-sm text-right text-red-600">${monthData.inscriptions.discountAmount.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-green-600">${monthData.inscriptions.netAmount.toLocaleString()}</td>
+                                </tr>
+                                
+                                <tr className="bg-yellow-50">
+                                  <td className="px-4 py-3 text-sm font-medium text-yellow-900" colSpan={5}>
+                                    COLEGIATURAS
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-3 text-sm text-gray-900">Colegiaturas</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">${monthData.tuitions.price.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">{monthData.tuitions.discountPercent}%</td>
+                                  <td className="px-4 py-3 text-sm text-right text-red-600">${monthData.tuitions.discountAmount.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-green-600">${monthData.tuitions.netAmount.toLocaleString()}</td>
+                                </tr>
+                                
+                                <tr className="bg-gray-100 font-medium">
+                                  <td className="px-4 py-3 text-sm text-gray-900">TOTALES DEL MES</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">${monthData.totals.grossRevenue.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-red-600">${monthData.totals.totalDiscount.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-green-600">${monthData.totals.netRevenue.toLocaleString()}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
