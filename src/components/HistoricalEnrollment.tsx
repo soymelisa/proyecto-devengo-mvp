@@ -8,9 +8,10 @@ interface ProjectionConfig {
   name: string;
   startDate: string;
   endDate: string;
-  retentionRate: number;
-  discountRate: number;
-  scholarshipRate: number;
+  intercycleRetention: number;
+  intracycleRetention: number;
+  tuitionDiscount: number;
+  enrollmentDiscount: number;
   campus: string;
   program: string;
   modality: string;
@@ -44,9 +45,10 @@ const HistoricalEnrollment: React.FC = () => {
     name: '',
     startDate: '2025-10-01',
     endDate: '2026-09-30',
-    retentionRate: 85,
-    discountRate: 10,
-    scholarshipRate: 15,
+    intercycleRetention: 85,
+    intracycleRetention: 92,
+    tuitionDiscount: 10,
+    enrollmentDiscount: 15,
     campus: 'all',
     program: 'all',
     modality: 'all',
@@ -62,9 +64,10 @@ const HistoricalEnrollment: React.FC = () => {
       name: 'Proyección Q4 2025',
       startDate: '2025-10-01',
       endDate: '2025-12-31',
-      retentionRate: 85,
-      discountRate: 10,
-      scholarshipRate: 15,
+      intercycleRetention: 85,
+      intracycleRetention: 92,
+      tuitionDiscount: 10,
+      enrollmentDiscount: 15,
       campus: 'Ciudad de México',
       program: 'Ingeniería en Sistemas',
       modality: 'Presencial',
@@ -76,9 +79,10 @@ const HistoricalEnrollment: React.FC = () => {
       name: 'Proyección Anual 2026',
       startDate: '2026-01-01',
       endDate: '2026-12-31',
-      retentionRate: 88,
-      discountRate: 12,
-      scholarshipRate: 18,
+      intercycleRetention: 88,
+      intracycleRetention: 94,
+      tuitionDiscount: 12,
+      enrollmentDiscount: 18,
       campus: 'all',
       program: 'all',
       modality: 'all',
@@ -135,14 +139,16 @@ const HistoricalEnrollment: React.FC = () => {
     const baseEnrollmentPrice = 12500;
     
     return futureMonths.slice(0, 12).map((month, index) => {
-      const retentionFactor = Math.pow((config.retentionRate || 85) / 100, index / 12);
-      const students = Math.round(baseStudents * retentionFactor);
+      const intercycleRetentionFactor = Math.pow((config.intercycleRetention || 85) / 100, index / 12);
+      const intracycleRetentionFactor = (config.intracycleRetention || 92) / 100;
+      const combinedRetentionFactor = intercycleRetentionFactor * intracycleRetentionFactor;
+      const students = Math.round(baseStudents * combinedRetentionFactor);
       
-      const discountFactor = 1 - (config.discountRate || 10) / 100;
-      const scholarshipFactor = 1 - (config.scholarshipRate || 15) / 100;
+      const tuitionDiscountFactor = 1 - (config.tuitionDiscount || 10) / 100;
+      const enrollmentDiscountFactor = 1 - (config.enrollmentDiscount || 15) / 100;
       
-      const effectiveTuitionPrice = baseTuitionPrice * discountFactor * scholarshipFactor;
-      const effectiveEnrollmentPrice = baseEnrollmentPrice * discountFactor * scholarshipFactor;
+      const effectiveTuitionPrice = baseTuitionPrice * tuitionDiscountFactor;
+      const effectiveEnrollmentPrice = baseEnrollmentPrice * enrollmentDiscountFactor;
       
       const tuitionCount = students;
       const enrollmentCount = index === 0 ? students : Math.round(students * 0.1); // Solo 10% se inscribe en meses posteriores
@@ -276,13 +282,15 @@ const HistoricalEnrollment: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Matrícula Histórica</h1>
             <p className="text-gray-600 mt-2">Análisis histórico de matrícula por período</p>
           </div>
-          <button 
-            onClick={() => alert('Función de reporte de errores - En desarrollo')}
-            className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-          >
-            <AlertTriangle className="w-4 h-4 mr-2" />
-            Reportar Error
-          </button>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => alert('Función de reporte de errores - En desarrollo')}
+              className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Reportar Error
+            </button>
+          </div>
         </div>
       </div>
 
@@ -714,16 +722,20 @@ const HistoricalEnrollment: React.FC = () => {
                           
                           <div className="space-y-1 text-xs text-gray-600 mb-3">
                             <div className="flex justify-between">
-                              <span>Retención:</span>
-                              <span className="font-medium">{projection.retentionRate}%</span>
+                              <span>Retención Interciclo:</span>
+                              <span className="font-medium">{projection.intercycleRetention}%</span>
                             </div>
                             <div className="flex justify-between">
-                              <span>Descuento:</span>
-                              <span className="font-medium">{projection.discountRate}%</span>
+                              <span>Retención Intraciclo:</span>
+                              <span className="font-medium">{projection.intracycleRetention}%</span>
                             </div>
                             <div className="flex justify-between">
-                              <span>Becas:</span>
-                              <span className="font-medium">{projection.scholarshipRate}%</span>
+                              <span>Desc. Colegiaturas:</span>
+                              <span className="font-medium">{projection.tuitionDiscount}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Desc. Inscripciones:</span>
+                              <span className="font-medium">{projection.enrollmentDiscount}%</span>
                             </div>
                           </div>
                           
@@ -751,13 +763,22 @@ const HistoricalEnrollment: React.FC = () => {
                         <Calculator className="w-5 h-5 text-blue-600 mr-2" />
                         <h2 className="text-lg font-semibold text-gray-900">Configurar Proyección</h2>
                       </div>
-                      <button 
-                        onClick={() => setShowNewProjection(!showNewProjection)}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Nueva Proyección
-                      </button>
+                      <div className="flex items-center space-x-3">
+                        <button 
+                          onClick={() => alert('Función de reporte de errores - En desarrollo')}
+                          className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                        >
+                          <AlertTriangle className="w-4 h-4 mr-2" />
+                          Reportar Error
+                        </button>
+                        <button 
+                          onClick={() => setShowNewProjection(!showNewProjection)}
+                          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Nueva Proyección
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -807,44 +828,57 @@ const HistoricalEnrollment: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            % Retención: {newProjection.retentionRate}%
-                          </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">% Retención Interciclo</label>
                           <input
-                            type="range"
-                            min="50"
+                            type="number"
+                            min="0"
                             max="100"
-                            value={newProjection.retentionRate || 85}
-                            onChange={(e) => setNewProjection(prev => ({ ...prev, retentionRate: parseInt(e.target.value) }))}
-                            className="w-full"
+                            step="0.1"
+                            value={newProjection.intercycleRetention || 85}
+                            onChange={(e) => setNewProjection(prev => ({ ...prev, intercycleRetention: parseFloat(e.target.value) }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="85.0"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            % Descuento: {newProjection.discountRate}%
-                          </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">% Retención Intraciclo</label>
                           <input
-                            type="range"
+                            type="number"
                             min="0"
-                            max="50"
-                            value={newProjection.discountRate || 10}
-                            onChange={(e) => setNewProjection(prev => ({ ...prev, discountRate: parseInt(e.target.value) }))}
-                            className="w-full"
+                            max="100"
+                            step="0.1"
+                            value={newProjection.intracycleRetention || 92}
+                            onChange={(e) => setNewProjection(prev => ({ ...prev, intracycleRetention: parseFloat(e.target.value) }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="92.0"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            % Becas: {newProjection.scholarshipRate}%
-                          </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">% Descuento en Colegiaturas</label>
                           <input
-                            type="range"
+                            type="number"
                             min="0"
                             max="50"
-                            value={newProjection.scholarshipRate || 15}
-                            onChange={(e) => setNewProjection(prev => ({ ...prev, scholarshipRate: parseInt(e.target.value) }))}
-                            className="w-full"
+                            step="0.1"
+                            value={newProjection.tuitionDiscount || 10}
+                            onChange={(e) => setNewProjection(prev => ({ ...prev, tuitionDiscount: parseFloat(e.target.value) }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="10.0"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">% Descuento en Inscripciones</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="50"
+                            step="0.1"
+                            value={newProjection.enrollmentDiscount || 15}
+                            onChange={(e) => setNewProjection(prev => ({ ...prev, enrollmentDiscount: parseFloat(e.target.value) }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="15.0"
                           />
                         </div>
                       </div>
