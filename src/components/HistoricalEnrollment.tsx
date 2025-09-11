@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Download, Search, Filter, Calculator, Settings, Save, Plus, Eye } from 'lucide-react';
+import { Users, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Download, Search, Filter, Calculator, Settings, Save, Plus, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { mockActiveStudents } from '../data/mockData';
 import { ActiveStudent } from '../types';
 
@@ -38,6 +38,7 @@ const HistoricalEnrollment: React.FC = () => {
   const [selectedProjection, setSelectedProjection] = useState<ProjectionConfig | null>(null);
   const [projectionMonth, setProjectionMonth] = useState('Oct 25');
   const [showNewProjection, setShowNewProjection] = useState(false);
+  const [showSavedProjections, setShowSavedProjections] = useState(false);
   
   const [newProjection, setNewProjection] = useState<Partial<ProjectionConfig>>({
     name: '',
@@ -270,8 +271,19 @@ const HistoricalEnrollment: React.FC = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Matrícula Histórica</h1>
-        <p className="text-gray-600 mt-2">Análisis histórico de matrícula por período</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Matrícula Histórica</h1>
+            <p className="text-gray-600 mt-2">Análisis histórico de matrícula por período</p>
+          </div>
+          <button 
+            onClick={() => alert('Función de reporte de errores - En desarrollo')}
+            className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+          >
+            <AlertTriangle className="w-4 h-4 mr-2" />
+            Reportar Error
+          </button>
+        </div>
       </div>
 
       {/* Tabs principales */}
@@ -652,9 +664,86 @@ const HistoricalEnrollment: React.FC = () => {
           )}
 
           {activeTab === 'proyecciones' && (
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div>
+              {/* Barra desplegable de proyecciones guardadas */}
+              <div className="bg-gray-50 rounded-xl border border-gray-200 mb-6">
+                <button
+                  onClick={() => setShowSavedProjections(!showSavedProjections)}
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-100 transition-colors rounded-xl"
+                >
+                  <div className="flex items-center">
+                    <Calculator className="w-5 h-5 text-purple-600 mr-2" />
+                    <span className="font-medium text-gray-900">
+                      Proyecciones Guardadas ({savedProjections.length})
+                    </span>
+                    {selectedProjection && (
+                      <span className="ml-2 text-sm text-purple-600">
+                        - {selectedProjection.name}
+                      </span>
+                    )}
+                  </div>
+                  {showSavedProjections ? (
+                    <ChevronUp className="w-5 h-5 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-500" />
+                  )}
+                </button>
+                
+                {showSavedProjections && (
+                  <div className="border-t border-gray-200 p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {savedProjections.map((projection) => (
+                        <div 
+                          key={projection.id}
+                          onClick={() => {
+                            setSelectedProjection(projection);
+                            setShowSavedProjections(false);
+                          }}
+                          className={`p-4 cursor-pointer transition-colors rounded-lg border-2 ${
+                            selectedProjection?.id === projection.id 
+                              ? 'bg-blue-50 border-blue-300' 
+                              : 'bg-white border-gray-200 hover:border-blue-200 hover:bg-blue-50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-gray-900 text-sm">{projection.name}</h4>
+                            <button className="text-blue-600 hover:text-blue-800">
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </div>
+                          
+                          <div className="space-y-1 text-xs text-gray-600 mb-3">
+                            <div className="flex justify-between">
+                              <span>Retención:</span>
+                              <span className="font-medium">{projection.retentionRate}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Descuento:</span>
+                              <span className="font-medium">{projection.discountRate}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Becas:</span>
+                              <span className="font-medium">{projection.scholarshipRate}%</span>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-2 border-t border-gray-200">
+                            <p className="text-xs text-gray-500">
+                              {projection.campus === 'all' ? 'Todos los campus' : projection.campus}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Creado: {new Date(projection.createdAt).toLocaleDateString('es-MX')}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Panel principal de configuración */}
-              <div className="lg:col-span-3">
+              <div>
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
                   <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center justify-between">
@@ -894,57 +983,6 @@ const HistoricalEnrollment: React.FC = () => {
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Barra lateral de proyecciones guardadas */}
-              <div className="lg:col-span-1">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                  <div className="p-6 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Proyecciones Guardadas</h3>
-                  </div>
-                  <div className="divide-y divide-gray-200">
-                    {savedProjections.map((projection) => (
-                      <div 
-                        key={projection.id}
-                        onClick={() => setSelectedProjection(projection)}
-                        className={`p-4 cursor-pointer transition-colors ${
-                          selectedProjection?.id === projection.id ? 'bg-blue-50 border-r-2 border-blue-500' : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-gray-900 text-sm">{projection.name}</h4>
-                          <button className="text-blue-600 hover:text-blue-800">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </div>
-                        
-                        <div className="space-y-1 text-xs text-gray-600">
-                          <div className="flex justify-between">
-                            <span>Retención:</span>
-                            <span className="font-medium">{projection.retentionRate}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Descuento:</span>
-                            <span className="font-medium">{projection.discountRate}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Becas:</span>
-                            <span className="font-medium">{projection.scholarshipRate}%</span>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-2 pt-2 border-t border-gray-200">
-                          <p className="text-xs text-gray-500">
-                            {projection.campus === 'all' ? 'Todos los campus' : projection.campus}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Creado: {new Date(projection.createdAt).toLocaleDateString('es-MX')}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>
