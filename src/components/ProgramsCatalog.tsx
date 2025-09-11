@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Plus, Edit, Eye, Filter, Search, Calendar, Tag, TrendingUp, Building2 } from 'lucide-react';
+import { BookOpen, Plus, Edit, Eye, Filter, Search, Calendar, Tag, TrendingUp, Building2, AlertTriangle } from 'lucide-react';
 
 interface Program {
   id: string;
@@ -33,8 +33,7 @@ const ProgramsCatalog: React.FC = () => {
     price: 12500,
     duration: 8,
     campus: 'Ciudad de México',
-    isHypothetical: false,
-    hypotheticalTag: ''
+    hypotheticalTag: 'NUEVO-2026'
   });
 
   // Mock data de programas
@@ -154,8 +153,7 @@ const ProgramsCatalog: React.FC = () => {
       price: 12500,
       duration: 8,
       campus: 'Ciudad de México',
-      isHypothetical: false,
-      hypotheticalTag: ''
+      hypotheticalTag: 'NUEVO-2026'
     });
   };
 
@@ -197,13 +195,22 @@ const ProgramsCatalog: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Catálogo de Programas</h1>
             <p className="text-gray-600 mt-2">Gestión de programas académicos por período</p>
           </div>
-          <button 
-            onClick={() => setShowNewProgramModal(true)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo Programa
-          </button>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => alert('Función de reporte de errores - En desarrollo')}
+              className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Reportar Error
+            </button>
+            <button 
+              onClick={() => setShowNewProgramModal(true)}
+              className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nuevo Programa Hipotético
+            </button>
+          </div>
         </div>
       </div>
 
@@ -492,7 +499,12 @@ const ProgramsCatalog: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Crear Nuevo Programa</h3>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Crear Nuevo Programa Hipotético</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Los programas nuevos son siempre hipotéticos. Los programas reales vienen precargados en el sistema.
+                </p>
+              </div>
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -502,7 +514,7 @@ const ProgramsCatalog: React.FC = () => {
                     type="text"
                     value={newProgram.name}
                     onChange={(e) => setNewProgram(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-purple-50"
                     placeholder="Ej: Ingeniería en Datos"
                   />
                 </div>
@@ -574,36 +586,26 @@ const ProgramsCatalog: React.FC = () => {
                     <option value="Guadalajara">Guadalajara</option>
                     <option value="Monterrey">Monterrey</option>
                     <option value="Puebla">Puebla</option>
+                    required
                   </select>
+                  <p className="text-xs text-purple-600 mt-1">
+                    <strong>Requerido:</strong> Este tag identificará el programa en las proyecciones
+                  </p>
                 </div>
               </div>
 
-              {/* Opción hipotética */}
-              <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                <label className="flex items-center mb-3">
-                  <input
-                    type="checkbox"
-                    checked={newProgram.isHypothetical}
-                    onChange={(e) => setNewProgram(prev => ({ ...prev, isHypothetical: e.target.checked }))}
-                    className="mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <span className="text-sm font-medium text-purple-900">Programa Hipotético</span>
-                </label>
-                {newProgram.isHypothetical && (
+              {/* Información sobre programas hipotéticos */}
+              <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-start">
+                  <Tag className="w-5 h-5 text-purple-600 mr-2 mt-0.5" />
                   <div>
-                    <label className="block text-sm font-medium text-purple-700 mb-2">Tag Identificador</label>
-                    <input
-                      type="text"
-                      value={newProgram.hypotheticalTag}
-                      onChange={(e) => setNewProgram(prev => ({ ...prev, hypotheticalTag: e.target.value }))}
-                      className="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                      placeholder="Ej: NUEVO-2026, PILOTO-2026"
-                    />
-                    <p className="text-xs text-purple-600 mt-1">
-                      Este tag ayudará a identificar el programa en las proyecciones
+                    <h4 className="text-sm font-medium text-purple-900 mb-1">Programa Hipotético</h4>
+                    <p className="text-xs text-purple-700">
+                      Este programa será marcado como hipotético y podrá ser utilizado en proyecciones futuras. 
+                      Los programas reales son gestionados por el administrador del sistema.
                     </p>
                   </div>
-                )}
+                </div>
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
@@ -615,9 +617,10 @@ const ProgramsCatalog: React.FC = () => {
               </button>
               <button 
                 onClick={handleCreateProgram}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={!newProgram.name || !newProgram.hypotheticalTag}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Crear Programa
+                Crear Programa Hipotético
               </button>
             </div>
           </div>
