@@ -40,6 +40,7 @@ const HistoricalEnrollment: React.FC = () => {
   const [projectionMonth, setProjectionMonth] = useState('Oct 25');
   const [showNewProjection, setShowNewProjection] = useState(false);
   const [showSavedProjections, setShowSavedProjections] = useState(false);
+  const [showDetailedResults, setShowDetailedResults] = useState(false);
   
   const [newProjection, setNewProjection] = useState<Partial<ProjectionConfig>>({
     name: '',
@@ -51,6 +52,68 @@ const HistoricalEnrollment: React.FC = () => {
     enrollmentDiscount: 15,
     campus: 'all',
     program: 'all',
+  // Función para calcular resultados detallados
+  const calculateDetailedResults = (params: any) => {
+    const baseEnrollment = params.activeEnrollment || 150;
+    const intercycleRate = params.intercycleRetention / 100;
+    const intracycleRate = params.intracycleRetention / 100;
+    const tuitionDiscountRate = params.tuitionDiscount / 100;
+    const enrollmentDiscountRate = params.enrollmentDiscount / 100;
+    
+    // Cálculo de estudiantes
+    const totalRetained = Math.round(baseEnrollment * intercycleRate * intracycleRate);
+    const newStudents = Math.round(totalRetained * 0.3); // 30% nuevos ingresos
+    const returningStudents = totalRetained - newStudents; // RI (incluye RA)
+    
+    // Precios base
+    const baseEnrollmentPrice = 12500;
+    const baseTuitionPrice = 8500;
+    
+    // Cálculos de inscripciones
+    const enrollmentRevenue = totalRetained * baseEnrollmentPrice;
+    const enrollmentDiscountAmount = enrollmentRevenue * enrollmentDiscountRate;
+    const netEnrollmentRevenue = enrollmentRevenue - enrollmentDiscountAmount;
+    
+    // Cálculos de colegiaturas (asumiendo 5 mensualidades por período)
+    const tuitionRevenue = totalRetained * baseTuitionPrice * 5;
+    const tuitionDiscountAmount = tuitionRevenue * tuitionDiscountRate;
+    const netTuitionRevenue = tuitionRevenue - tuitionDiscountAmount;
+    
+    // Totales
+    const totalRevenue = enrollmentRevenue + tuitionRevenue;
+    const totalDiscount = enrollmentDiscountAmount + tuitionDiscountAmount;
+    const totalNetRevenue = netEnrollmentRevenue + netTuitionRevenue;
+    
+    return {
+      students: {
+        total: totalRetained,
+        newStudents: newStudents,
+        returningStudents: returningStudents
+      },
+      enrollment: {
+        price: baseEnrollmentPrice,
+        discountPercent: params.enrollmentDiscount,
+        revenue: enrollmentRevenue,
+        discountAmount: enrollmentDiscountAmount,
+        netRevenue: netEnrollmentRevenue
+      },
+      tuition: {
+        price: baseTuitionPrice,
+        discountPercent: params.tuitionDiscount,
+        revenue: tuitionRevenue,
+        discountAmount: tuitionDiscountAmount,
+        netRevenue: netTuitionRevenue
+      },
+      totals: {
+        totalRevenue,
+        totalDiscount,
+        totalNetRevenue
+      }
+    };
+  };
+
+  const detailedResults = calculateDetailedResults(newProjection);
+
     modality: 'all',
     brand: 'all'
   });
@@ -282,6 +345,13 @@ const HistoricalEnrollment: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Matrícula Histórica</h1>
             <p className="text-gray-600 mt-2">Análisis histórico de matrícula por período</p>
           </div>
+          <button 
+            onClick={() => alert('Función de reporte de errores - En desarrollo')}
+            className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+          >
+            <AlertTriangle className="w-4 h-4 mr-2" />
+            Reportar Error
+          </button>
           <div className="flex items-center space-x-3">
             <button 
               onClick={() => alert('Función de reporte de errores - En desarrollo')}
@@ -666,6 +736,168 @@ const HistoricalEnrollment: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Resultados detallados */}
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Resultados de Proyección</h3>
+                    <button
+                      onClick={() => setShowDetailedResults(!showDetailedResults)}
+                      className="flex items-center px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                      {showDetailedResults ? 'Ocultar Detalle' : 'Ver Detalle Completo'}
+                      <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showDetailedResults ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
+
+                  {showDetailedResults && (
+                    <div className="bg-gray-50 rounded-lg p-6">
+                      {/* Resumen de estudiantes */}
+                      <div className="mb-6">
+                        <h4 className="text-md font-semibold text-gray-800 mb-3">Desglose de Estudiantes</h4>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-600">Total Estudiantes</p>
+                            <p className="text-2xl font-bold text-blue-600">{detailedResults.students.total}</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-600">NI (Nuevo Ingreso)</p>
+                            <p className="text-2xl font-bold text-green-600">{detailedResults.students.newStudents}</p>
+                            <p className="text-xs text-gray-500">{((detailedResults.students.newStudents / detailedResults.students.total) * 100).toFixed(1)}%</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-600">RI (Reingreso + RA)</p>
+                            <p className="text-2xl font-bold text-purple-600">{detailedResults.students.returningStudents}</p>
+                            <p className="text-xs text-gray-500">{((detailedResults.students.returningStudents / detailedResults.students.total) * 100).toFixed(1)}%</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tabla detallada de ingresos */}
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="bg-gray-100 px-6 py-3 border-b border-gray-200">
+                          <h4 className="text-md font-semibold text-gray-800">Desglose Financiero Detallado</h4>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Concepto</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Base</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">% Descuento</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">$ Ingreso Bruto</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">$ Descuento</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">$ Ingreso Neto</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {/* Inscripciones */}
+                              <tr className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900">Inscripciones</div>
+                                      <div className="text-xs text-gray-500">{detailedResults.students.total} estudiantes</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                  ${detailedResults.enrollment.price.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-orange-600 font-medium">
+                                  {detailedResults.enrollment.discountPercent}%
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                  ${detailedResults.enrollment.revenue.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600 font-medium">
+                                  -${detailedResults.enrollment.discountAmount.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-green-600">
+                                  ${detailedResults.enrollment.netRevenue.toLocaleString()}
+                                </td>
+                              </tr>
+                              
+                              {/* Colegiaturas */}
+                              <tr className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900">Colegiaturas</div>
+                                      <div className="text-xs text-gray-500">{detailedResults.students.total} × 5 meses</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                  ${detailedResults.tuition.price.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-orange-600 font-medium">
+                                  {detailedResults.tuition.discountPercent}%
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                  ${detailedResults.tuition.revenue.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600 font-medium">
+                                  -${detailedResults.tuition.discountAmount.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-green-600">
+                                  ${detailedResults.tuition.netRevenue.toLocaleString()}
+                                </td>
+                              </tr>
+                            </tbody>
+                            
+                            {/* Totales */}
+                            <tfoot className="bg-gray-100 border-t-2 border-gray-300">
+                              <tr>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                  TOTALES
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                  -
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                  -
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-600">
+                                  ${detailedResults.totals.totalRevenue.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-red-600">
+                                  -${detailedResults.totals.totalDiscount.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-green-700 text-lg">
+                                  ${detailedResults.totals.totalNetRevenue.toLocaleString()}
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Resumen ejecutivo */}
+                      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <h5 className="text-sm font-medium text-blue-700 mb-1">Ingreso Total Bruto</h5>
+                          <p className="text-xl font-bold text-blue-900">${detailedResults.totals.totalRevenue.toLocaleString()}</p>
+                          <p className="text-xs text-blue-600 mt-1">Antes de descuentos</p>
+                        </div>
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <h5 className="text-sm font-medium text-red-700 mb-1">Descuento Total</h5>
+                          <p className="text-xl font-bold text-red-900">${detailedResults.totals.totalDiscount.toLocaleString()}</p>
+                          <p className="text-xs text-red-600 mt-1">
+                            {((detailedResults.totals.totalDiscount / detailedResults.totals.totalRevenue) * 100).toFixed(1)}% del ingreso bruto
+                          </p>
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <h5 className="text-sm font-medium text-green-700 mb-1">Ingreso Neto Final</h5>
+                          <p className="text-xl font-bold text-green-900">${detailedResults.totals.totalNetRevenue.toLocaleString()}</p>
+                          <p className="text-xs text-green-600 mt-1">Después de descuentos</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
