@@ -52,6 +52,10 @@ const HistoricalEnrollment: React.FC = () => {
     enrollmentDiscount: 15,
     campus: 'all',
     program: 'all',
+    modality: 'all',
+    brand: 'all'
+  });
+
   // Función para calcular resultados detallados
   const calculateDetailedResults = (params: any) => {
     const baseEnrollment = params.activeEnrollment || 150;
@@ -113,10 +117,6 @@ const HistoricalEnrollment: React.FC = () => {
   };
 
   const detailedResults = calculateDetailedResults(newProjection);
-
-    modality: 'all',
-    brand: 'all'
-  });
 
   const recordsPerPage = 50;
 
@@ -345,13 +345,6 @@ const HistoricalEnrollment: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Matrícula Histórica</h1>
             <p className="text-gray-600 mt-2">Análisis histórico de matrícula por período</p>
           </div>
-          <button 
-            onClick={() => alert('Función de reporte de errores - En desarrollo')}
-            className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-          >
-            <AlertTriangle className="w-4 h-4 mr-2" />
-            Reportar Error
-          </button>
           <div className="flex items-center space-x-3">
             <button 
               onClick={() => alert('Función de reporte de errores - En desarrollo')}
