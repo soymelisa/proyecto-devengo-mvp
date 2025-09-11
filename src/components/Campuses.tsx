@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Users, DollarSign, TrendingUp, Plus, Edit, MapPin, Tag, Eye, Search, Filter } from 'lucide-react';
+import { Building2, Users, DollarSign, TrendingUp, Plus, Edit, MapPin, Tag, Eye, Search, Filter, AlertTriangle, ChevronDown, X } from 'lucide-react';
 import { mockCampuses } from '../data/mockData';
 
 interface Campus {
@@ -27,6 +27,8 @@ const Campuses: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [brandFilter, setBrandFilter] = useState('all');
   const [showHypothetical, setShowHypothetical] = useState(true);
+  const [selectedCampuses, setSelectedCampuses] = useState<string[]>([]);
+  const [showCampusDropdown, setShowCampusDropdown] = useState(false);
   
   const [newCampus, setNewCampus] = useState({
     name: '',
@@ -124,9 +126,10 @@ const Campuses: React.FC = () => {
     const matchesSearch = campus.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          campus.city.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesBrand = brandFilter === 'all' || campus.brand === brandFilter;
+    const matchesCampusSelection = selectedCampuses.length === 0 || selectedCampuses.includes(campus.name);
     const matchesHypothetical = showHypothetical || !campus.isHypothetical;
     
-    return matchesSearch && matchesBrand && matchesHypothetical;
+    return matchesSearch && matchesBrand && matchesCampusSelection && matchesHypothetical;
   });
 
   // Calcular métricas
@@ -169,6 +172,27 @@ const Campuses: React.FC = () => {
     return colors[brand as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
+  const handleCampusToggle = (campusName: string) => {
+    setSelectedCampuses(prev => {
+      if (prev.includes(campusName)) {
+        return prev.filter(name => name !== campusName);
+      } else {
+        return [...prev, campusName];
+      }
+    });
+  };
+
+  const handleSelectAllCampuses = () => {
+    if (selectedCampuses.length === mockCampusesExtended.length) {
+      setSelectedCampuses([]);
+    } else {
+      setSelectedCampuses(mockCampusesExtended.map(campus => campus.name));
+    }
+  };
+
+  const clearCampusSelection = () => {
+    setSelectedCampuses([]);
+  };
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -177,13 +201,22 @@ const Campuses: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Gestión de Planteles</h1>
             <p className="text-gray-600 mt-2">Administración de campus, programas y modalidades</p>
           </div>
-          <button 
-            onClick={() => setShowAddForm(true)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Agregar Campus
-          </button>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => alert('Función de reporte de errores - En desarrollo')}
+              className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Reportar Error
+            </button>
+            <button 
+              onClick={() => setShowAddForm(true)}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Agregar Campus
+            </button>
+          </div>
         </div>
       </div>
 
@@ -252,7 +285,7 @@ const Campuses: React.FC = () => {
 
       {/* Filtros */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -277,6 +310,78 @@ const Campuses: React.FC = () => {
             <option value="UANE">UANE</option>
           </select>
 
+          {/* Multiselect de planteles */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCampusDropdown(!showCampusDropdown)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between"
+            >
+              <span className="text-sm">
+                {selectedCampuses.length === 0 
+                  ? 'Todos los Planteles' 
+                  : selectedCampuses.length === 1 
+                    ? selectedCampuses[0]
+                    : `${selectedCampuses.length} planteles seleccionados`
+                }
+              </span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${showCampusDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {showCampusDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                {/* Opciones de selección rápida */}
+                <div className="p-3 border-b border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <button
+                      onClick={handleSelectAllCampuses}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      {selectedCampuses.length === mockCampusesExtended.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                    </button>
+                    {selectedCampuses.length > 0 && (
+                      <button
+                        onClick={clearCampusSelection}
+                        className="text-sm text-gray-600 hover:text-gray-800"
+                      >
+                        Limpiar
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Lista de planteles */}
+                <div className="py-2">
+                  {mockCampusesExtended.map((campus) => (
+                    <label
+                      key={campus.id}
+                      className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCampuses.includes(campus.name)}
+                        onChange={() => handleCampusToggle(campus.name)}
+                        className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1 flex items-center justify-between">
+                        <div>
+                          <span className="text-sm text-gray-900">{campus.name}</span>
+                          <div className="flex items-center mt-1">
+                            <span className="text-xs text-gray-500 mr-2">{campus.city}</span>
+                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getBrandColor(campus.brand)}`}>
+                              {campus.brand}
+                            </span>
+                            {campus.isHypothetical && (
+                              <Tag className="w-3 h-3 text-purple-500 ml-2" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <label className="flex items-center">
             <input
               type="checkbox"
@@ -287,13 +392,40 @@ const Campuses: React.FC = () => {
             <span className="text-sm text-gray-700">Mostrar Hipotéticos</span>
           </label>
 
-          <div></div>
-
           <button className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             <Filter className="w-4 h-4 mr-2" />
             Filtrar
           </button>
         </div>
+        
+        {/* Chips de planteles seleccionados */}
+        {selectedCampuses.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center flex-wrap gap-2">
+              <span className="text-sm font-medium text-gray-700 mr-2">Planteles seleccionados:</span>
+              {selectedCampuses.map((campusName) => {
+                const campus = mockCampusesExtended.find(c => c.name === campusName);
+                return (
+                  <div
+                    key={campusName}
+                    className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                  >
+                    <span>{campusName}</span>
+                    {campus && (
+                      <span className="ml-1 text-xs">({campus.brand})</span>
+                    )}
+                    <button
+                      onClick={() => handleCampusToggle(campusName)}
+                      className="ml-2 hover:bg-blue-200 rounded-full p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Métricas por campus */}
