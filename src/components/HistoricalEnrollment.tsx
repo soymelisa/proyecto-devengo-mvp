@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Download, Search, Filter, Calculator, Settings, Save, Plus, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Download, Search, Filter, Calculator, Settings, Save, Plus, Eye, ChevronDown, ChevronUp, DollarSign, Calendar } from 'lucide-react';
 import { mockActiveStudents } from '../data/mockData';
 import { ActiveStudent } from '../types';
 
@@ -1296,84 +1296,311 @@ const HistoricalEnrollment: React.FC = () => {
                           const monthData = projections.find(p => p.month === projectionMonth) || projections[0];
                           
                           return (
-                            <div>
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                                <div className="bg-blue-50 rounded-lg p-4 text-center">
-                                  <h4 className="text-2xl font-bold text-blue-900">{monthData.students}</h4>
-                                  <p className="text-sm text-blue-700">Estudiantes Proyectados</p>
+                            <div className="space-y-6">
+                              {/* Resultados de Proyección Detallados */}
+                              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                                <div className="p-6 border-b border-gray-200">
+                                  <h3 className="text-lg font-semibold text-gray-900">Resultados de Proyección - {selectedMonth}</h3>
+                                  <p className="text-sm text-gray-600 mt-1">Análisis financiero detallado por categorías</p>
                                 </div>
-                                <div className="bg-green-50 rounded-lg p-4 text-center">
-                                  <h4 className="text-2xl font-bold text-green-900">{monthData.tuitionCount}</h4>
-                                  <p className="text-sm text-green-700">Colegiaturas</p>
-                                  <p className="text-xs text-green-600">${monthData.tuitionRevenue.toLocaleString()}</p>
-                                </div>
-                                <div className="bg-purple-50 rounded-lg p-4 text-center">
-                                  <h4 className="text-2xl font-bold text-purple-900">{monthData.enrollmentCount}</h4>
-                                  <p className="text-sm text-purple-700">Inscripciones</p>
-                                  <p className="text-xs text-purple-600">${monthData.enrollmentRevenue.toLocaleString()}</p>
-                                </div>
-                                <div className="bg-orange-50 rounded-lg p-4 text-center">
-                                  <h4 className="text-2xl font-bold text-orange-900">${(monthData.totalRevenue / 1000000).toFixed(1)}M</h4>
-                                  <p className="text-sm text-orange-700">Ingreso Total</p>
-                                </div>
-                              </div>
+                                
+                                <div className="p-6">
+                                  {/* Resumen Ejecutivo */}
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                                      <div className="flex items-center justify-between">
+                                        <div className="p-3 rounded-lg bg-blue-100">
+                                          <DollarSign className="w-6 h-6 text-blue-600" />
+                                        </div>
+                                      </div>
+                                      <div className="mt-4">
+                                        <h3 className="text-2xl font-bold text-blue-900">$4.2M</h3>
+                                        <p className="text-blue-700 text-sm mt-1">Ingreso Total Bruto</p>
+                                        <p className="text-xs text-blue-600 mt-1">Antes de descuentos</p>
+                                      </div>
+                                    </div>
 
-                              {/* Desglose por categorías */}
-                              <div className="bg-gray-50 rounded-lg p-4">
-                                <h4 className="font-semibold text-gray-900 mb-3">Desglose por Categorías</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-sm text-gray-600 mb-2">Por Campus:</p>
-                                    <div className="space-y-1">
-                                      <div className="flex justify-between text-sm">
-                                        <span>Ciudad de México</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.4)} estudiantes</span>
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                                      <div className="flex items-center justify-between">
+                                        <div className="p-3 rounded-lg bg-red-100">
+                                          <TrendingDown className="w-6 h-6 text-red-600" />
+                                        </div>
                                       </div>
-                                      <div className="flex justify-between text-sm">
-                                        <span>Guadalajara</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.35)} estudiantes</span>
+                                      <div className="mt-4">
+                                        <h3 className="text-2xl font-bold text-red-900">$540K</h3>
+                                        <p className="text-red-700 text-sm mt-1">Descuentos Totales</p>
+                                        <p className="text-xs text-red-600 mt-1">12.9% del bruto</p>
                                       </div>
-                                      <div className="flex justify-between text-sm">
-                                        <span>Monterrey</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.25)} estudiantes</span>
+                                    </div>
+
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                                      <div className="flex items-center justify-between">
+                                        <div className="p-3 rounded-lg bg-green-100">
+                                          <TrendingUp className="w-6 h-6 text-green-600" />
+                                        </div>
+                                      </div>
+                                      <div className="mt-4">
+                                        <h3 className="text-2xl font-bold text-green-900">$3.66M</h3>
+                                        <p className="text-green-700 text-sm mt-1">Ingreso Neto Final</p>
+                                        <p className="text-xs text-green-600 mt-1">Ingreso real proyectado</p>
                                       </div>
                                     </div>
                                   </div>
-                                  <div>
-                                    <p className="text-sm text-gray-600 mb-2">Por Modalidad:</p>
-                                    <div className="space-y-1">
-                                      <div className="flex justify-between text-sm">
-                                        <span>Presencial</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.5)} estudiantes</span>
+
+                                  {/* Desglose Detallado por Mes */}
+                                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                      <div className="flex items-center justify-between">
+                                        <h4 className="text-lg font-semibold text-gray-900">
+                                          Desglose Financiero Detallado - {selectedMonth}
+                                        </h4>
+                                        <div className="text-sm text-gray-600">
+                                          <span className="font-medium">Total Estudiantes: 847</span>
+                                          <span className="mx-2">•</span>
+                                          <span>NI: 245 (28.9%) | RI: 602 (71.1%)</span>
+                                        </div>
                                       </div>
-                                      <div className="flex justify-between text-sm">
-                                        <span>Online</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.3)} estudiantes</span>
-                                      </div>
-                                      <div className="flex justify-between text-sm">
-                                        <span>Sabatina</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.2)} estudiantes</span>
-                                      </div>
+                                    </div>
+                                    
+                                    <div className="overflow-x-auto">
+                                      <table className="w-full">
+                                        <thead className="bg-gray-50">
+                                          <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Concepto
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Estudiantes
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Precio Base
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              % Descuento
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              $ Descuento
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              $ Neto
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                          {/* Sección: Desglose de Estudiantes */}
+                                          <tr className="bg-blue-25">
+                                            <td colSpan={6} className="px-6 py-3 bg-blue-50 border-b border-blue-200">
+                                              <h5 className="text-sm font-semibold text-blue-900 flex items-center">
+                                                <Users className="w-4 h-4 mr-2" />
+                                                Desglose de Estudiantes
+                                              </h5>
+                                            </td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              NI (Nuevo Ingreso)
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">245</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">28.9%</td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              RI (Reingreso + RA)
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">602</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">71.1%</td>
+                                          </tr>
+
+                                          {/* Sección: Inscripciones */}
+                                          <tr>
+                                            <td colSpan={6} className="px-6 py-3 bg-purple-50 border-b border-purple-200">
+                                              <h5 className="text-sm font-semibold text-purple-900 flex items-center">
+                                                <Calendar className="w-4 h-4 mr-2" />
+                                                Inscripciones
+                                              </h5>
+                                            </td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              Inscripción NI
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">245</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$12,500</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">15%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">$459,375</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">$2,603,125</td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              Inscripción RI
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">602</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$8,500</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">8%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">$409,360</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">$4,707,640</td>
+                                          </tr>
+
+                                          {/* Sección: Colegiaturas */}
+                                          <tr>
+                                            <td colSpan={6} className="px-6 py-3 bg-orange-50 border-b border-orange-200">
+                                              <h5 className="text-sm font-semibold text-orange-900 flex items-center">
+                                                <DollarSign className="w-4 h-4 mr-2" />
+                                                Colegiaturas (5 meses)
+                                              </h5>
+                                            </td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              Colegiatura NI
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">245 × 5</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$8,500</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">12%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">$1,249,500</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">$9,163,000</td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              Colegiatura RI
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">602 × 5</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$7,200</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">10%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">$2,167,200</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">$19,504,800</td>
+                                          </tr>
+
+                                          {/* Totales */}
+                                          <tr className="bg-gray-100 border-t-2 border-gray-300">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                              TOTALES GENERALES
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">847</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">$42,200,000</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">12.9%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600">$5,440,000</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">$36,760,000</td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+
+                                  {/* Análisis de Impacto */}
+                                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                      <h5 className="text-sm font-medium text-blue-700 mb-2">Eficiencia de Inscripciones</h5>
+                                      <p className="text-2xl font-bold text-blue-900">87.1%</p>
+                                      <p className="text-xs text-blue-600">Ingreso neto vs bruto</p>
+                                    </div>
+                                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                      <h5 className="text-sm font-medium text-orange-700 mb-2">Eficiencia de Colegiaturas</h5>
+                                      <p className="text-2xl font-bold text-orange-900">89.2%</p>
+                                      <p className="text-xs text-orange-600">Ingreso neto vs bruto</p>
+                                    </div>
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                      <h5 className="text-sm font-medium text-green-700 mb-2">Ingreso Promedio por Estudiante</h5>
+                                      <p className="text-2xl font-bold text-green-900">$43,400</p>
+                                      <p className="text-xs text-green-600">Anual neto estimado</p>
                                     </div>
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Suma global */}
-                              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-semibold text-blue-900 mb-2">Resumen Global - {projectionMonth}</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div className="text-center">
-                                    <p className="text-2xl font-bold text-blue-900">{monthData.students}</p>
-                                    <p className="text-sm text-blue-700">Total Estudiantes</p>
+                              {/* Desglose por Categorías */}
+                              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                                <div className="p-6 border-b border-gray-200">
+                                  <h3 className="text-lg font-semibold text-gray-900">Desglose por Categorías</h3>
+                                  <p className="text-sm text-gray-600 mt-1">Distribución de estudiantes por diferentes criterios</p>
+                                </div>
+                                
+                                <div className="p-6">
+                                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                                    <div className="bg-blue-50 rounded-lg p-4 text-center">
+                                      <h4 className="text-2xl font-bold text-blue-900">{monthData.students}</h4>
+                                      <p className="text-sm text-blue-700">Estudiantes Proyectados</p>
+                                    </div>
+                                    <div className="bg-green-50 rounded-lg p-4 text-center">
+                                      <h4 className="text-2xl font-bold text-green-900">{monthData.tuitionCount}</h4>
+                                      <p className="text-sm text-green-700">Colegiaturas</p>
+                                      <p className="text-xs text-green-600">${monthData.tuitionRevenue.toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-purple-50 rounded-lg p-4 text-center">
+                                      <h4 className="text-2xl font-bold text-purple-900">{monthData.enrollmentCount}</h4>
+                                      <p className="text-sm text-purple-700">Inscripciones</p>
+                                      <p className="text-xs text-purple-600">${monthData.enrollmentRevenue.toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-orange-50 rounded-lg p-4 text-center">
+                                      <h4 className="text-2xl font-bold text-orange-900">${(monthData.totalRevenue / 1000000).toFixed(1)}M</h4>
+                                      <p className="text-sm text-orange-700">Ingreso Total</p>
+                                    </div>
                                   </div>
-                                  <div className="text-center">
-                                    <p className="text-2xl font-bold text-blue-900">{monthData.tuitionCount + monthData.enrollmentCount}</p>
-                                    <p className="text-sm text-blue-700">Total Transacciones</p>
+
+                                  {/* Desglose por categorías */}
+                                  <div className="bg-gray-50 rounded-lg p-4">
+                                    <h4 className="font-semibold text-gray-900 mb-3">Desglose por Categorías</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <p className="text-sm text-gray-600 mb-2">Por Campus:</p>
+                                        <div className="space-y-1">
+                                          <div className="flex justify-between text-sm">
+                                            <span>Ciudad de México</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.4)} estudiantes</span>
+                                          </div>
+                                          <div className="flex justify-between text-sm">
+                                            <span>Guadalajara</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.35)} estudiantes</span>
+                                          </div>
+                                          <div className="flex justify-between text-sm">
+                                            <span>Monterrey</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.25)} estudiantes</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-600 mb-2">Por Modalidad:</p>
+                                        <div className="space-y-1">
+                                          <div className="flex justify-between text-sm">
+                                            <span>Presencial</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.5)} estudiantes</span>
+                                          </div>
+                                          <div className="flex justify-between text-sm">
+                                            <span>Online</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.3)} estudiantes</span>
+                                          </div>
+                                          <div className="flex justify-between text-sm">
+                                            <span>Sabatina</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.2)} estudiantes</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div className="text-center">
-                                    <p className="text-2xl font-bold text-blue-900">${(monthData.totalRevenue / 1000000).toFixed(2)}M</p>
-                                    <p className="text-sm text-blue-700">Ingreso Total Proyectado</p>
+
+                                  {/* Suma global */}
+                                  <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h4 className="font-semibold text-blue-900 mb-2">Resumen Global - {projectionMonth}</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                      <div className="text-center">
+                                        <p className="text-2xl font-bold text-blue-900">{monthData.students}</p>
+                                        <p className="text-sm text-blue-700">Total Estudiantes</p>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="text-2xl font-bold text-blue-900">{monthData.tuitionCount + monthData.enrollmentCount}</p>
+                                        <p className="text-sm text-blue-700">Total Transacciones</p>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="text-2xl font-bold text-blue-900">${(monthData.totalRevenue / 1000000).toFixed(2)}M</p>
+                                        <p className="text-sm text-blue-700">Ingreso Total Proyectado</p>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
