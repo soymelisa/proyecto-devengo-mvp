@@ -537,10 +537,63 @@ const HistoricalEnrollment: React.FC = () => {
 
         <div className="p-6">
           {activeTab === 'resumen' && (
-            )
-            }
             <div>
               {/* Métricas principales */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-lg border border-gray-200">
+                  <div className="flex items-center">
+                    <Users className="w-8 h-8 text-blue-600 mr-3" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Estudiantes</p>
+                      <p className="text-2xl font-bold text-gray-900">{totalStudents.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg border border-gray-200">
+                  <div className="flex items-center">
+                    <CheckCircle className="w-8 h-8 text-green-600 mr-3" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Activos</p>
+                      <p className="text-2xl font-bold text-gray-900">{activeStudents.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg border border-gray-200">
+                  <div className="flex items-center">
+                    <AlertTriangle className="w-8 h-8 text-orange-600 mr-3" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">En Riesgo</p>
+                      <p className="text-2xl font-bold text-gray-900">{riskStudents.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg border border-gray-200">
+                  <div className="flex items-center">
+                    <XCircle className="w-8 h-8 text-blue-600 mr-3" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Sin CxC</p>
+                      <p className="text-2xl font-bold text-gray-900">{noCxCStudents.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg border border-gray-200">
+                  <div className="flex items-center">
+                    <TrendingDown className="w-8 h-8 text-red-600 mr-3" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Bajas</p>
+                      <p className="text-2xl font-bold text-gray-900">{dropouts.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HistoricalEnrollment;
   )
 }
