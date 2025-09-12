@@ -10,6 +10,7 @@ interface Program {
   price: number;
   duration: number;
   campus: string;
+  period: string;
   isHypothetical?: boolean;
   hypotheticalTag?: string;
   createdAt: string;
@@ -34,26 +35,6 @@ const ProgramsCatalog: React.FC = () => {
     duration: 8,
     campus: 'Ciudad de México',
     hypotheticalTag: 'NUEVO-2026'
-  period?: string;
-  createdAt?: string;
-}
-
-const ProgramsCatalog: React.FC = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('2025-01');
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [selectedBrand, setSelectedBrand] = useState('all');
-  const [selectedModality, setSelectedModality] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
-  
-  const [newProgram, setNewProgram] = useState({
-    name: '',
-    brand: '',
-    modality: '',
-    type: '',
-    price: 0,
-    duration: 0,
-    campus: '',
-    isHypothetical: false
   });
 
   // Mock data de programas
@@ -67,8 +48,8 @@ const ProgramsCatalog: React.FC = () => {
       price: 12500,
       duration: 8,
       campus: 'Ciudad de México',
-      createdAt: '2024-01-15'
       period: '2025-01'
+      createdAt: '2024-01-15'
     },
     {
       id: '2',
@@ -79,8 +60,8 @@ const ProgramsCatalog: React.FC = () => {
       price: 9500,
       duration: 12,
       campus: 'Guadalajara',
-      createdAt: '2024-01-15'
       period: '2025-01'
+      createdAt: '2024-01-15'
     },
     {
       id: '3',
@@ -88,14 +69,11 @@ const ProgramsCatalog: React.FC = () => {
       brand: 'UVM',
       modality: 'Sabatina',
       type: 'Semestral',
-      price: 15000,
-      duration: 10,
-      campus: 'Monterrey',
-      createdAt: '2024-01-15'
       price: 11000,
       duration: 10,
       campus: 'Monterrey',
       period: '2025-01'
+      createdAt: '2024-01-15'
     },
     {
       id: '4',
@@ -106,25 +84,20 @@ const ProgramsCatalog: React.FC = () => {
       price: 25000,
       duration: 12,
       campus: 'Ciudad de México',
-      createdAt: '2024-01-15'
       period: '2025-01'
+      createdAt: '2024-01-15'
     },
     {
       id: '5',
       name: 'Psicología',
       brand: 'UNITEC',
       modality: 'Online',
-      type: 'Cuatrimestral',
-      price: 8000,
-      duration: 12,
-      campus: 'Guadalajara',
-      createdAt: '2024-01-15'
-    },
       type: 'Trimestral',
       price: 8000,
       duration: 12,
       campus: 'Guadalajara',
       period: '2025-01'
+      createdAt: '2024-01-15'
     },
     {
       id: 'hyp-1',
@@ -135,6 +108,7 @@ const ProgramsCatalog: React.FC = () => {
       price: 18000,
       duration: 8,
       campus: 'Ciudad de México',
+      period: '2025-01',
       isHypothetical: true,
       hypotheticalTag: 'NUEVO-2026',
       createdAt: '2025-01-15'
@@ -145,11 +119,6 @@ const ProgramsCatalog: React.FC = () => {
       brand: 'UVM',
       modality: 'Presencial',
       type: 'Semestral',
-      price: 16000,
-      duration: 8,
-      campus: 'Monterrey',
-      isHypothetical: true,
-      hypotheticalTag: 'PILOTO-2026',
       price: 15000,
       duration: 8,
       campus: 'Ciudad de México',
@@ -172,9 +141,10 @@ const ProgramsCatalog: React.FC = () => {
   // Filtrar programas por período y otros filtros
   const filteredPrograms = mockPrograms.filter(program => {
     return program.period === selectedPeriod &&
-           (selectedBrand === 'all' || program.brand === selectedBrand) &&
-           (selectedModality === 'all' || program.modality === selectedModality) &&
-           (selectedType === 'all' || program.type === selectedType);
+           (brandFilter === 'all' || program.brand === brandFilter) &&
+           (modalityFilter === 'all' || program.modality === modalityFilter) &&
+           (typeFilter === 'all' || program.type === typeFilter) &&
+           (showHypothetical || !program.isHypothetical);
   });
 
   // Calcular métricas
@@ -249,16 +219,17 @@ const ProgramsCatalog: React.FC = () => {
 
   const handleCreateProgram = () => {
     console.log('Crear programa:', { ...newProgram, period: selectedPeriod });
-    setShowAddForm(false);
+    setShowNewProgramModal(false);
+    // Reset form
     setNewProgram({
       name: '',
-      brand: '',
-      modality: '',
-      type: '',
-      price: 0,
-      duration: 0,
-      campus: '',
-      isHypothetical: false
+      brand: 'Lottus',
+      modality: 'Presencial',
+      type: 'Semestral',
+      price: 12500,
+      duration: 8,
+      campus: 'Ciudad de México',
+      hypotheticalTag: 'NUEVO-2026'
     });
   };
   return (
@@ -753,11 +724,11 @@ const ProgramsCatalog: React.FC = () => {
                 </p>
               </div>
       {/* Modal para agregar programa */}
-      {showAddForm && (
+      {showNewProgramModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Agregar Nuevo Programa</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Crear Nuevo Programa Hipotético</h3>
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -914,7 +885,7 @@ const ProgramsCatalog: React.FC = () => {
             </div>
             <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
               <button 
-                onClick={() => setShowAddForm(false)}
+                onClick={() => setShowNewProgramModal(false)}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancelar
@@ -925,9 +896,9 @@ const ProgramsCatalog: React.FC = () => {
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Crear Programa Hipotético
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
-                Crear Programa
+                Crear Programa Hipotético
               </button>
             </div>
           </div>
