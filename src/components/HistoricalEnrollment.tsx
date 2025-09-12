@@ -595,5 +595,3 @@ const HistoricalEnrollment: React.FC = () => {
 };
 
 export default HistoricalEnrollment;
-  )
-}
