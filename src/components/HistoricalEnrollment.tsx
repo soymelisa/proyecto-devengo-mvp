@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Download, Search, Filter, Calculator, Settings, Save, Plus, Eye } from 'lucide-react';
+import { Users, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Download, Search, Filter, Calculator, Settings, Save, Plus, Eye, ChevronDown, ChevronUp, DollarSign, Calendar } from 'lucide-react';
 import { mockActiveStudents } from '../data/mockData';
 import { ActiveStudent } from '../types';
 
@@ -8,9 +8,10 @@ interface ProjectionConfig {
   name: string;
   startDate: string;
   endDate: string;
-  retentionRate: number;
-  discountRate: number;
-  scholarshipRate: number;
+  intercycleRetention: number;
+  intracycleRetention: number;
+  tuitionDiscount: number;
+  enrollmentDiscount: number;
   campus: string;
   program: string;
   modality: string;
@@ -38,19 +39,225 @@ const HistoricalEnrollment: React.FC = () => {
   const [selectedProjection, setSelectedProjection] = useState<ProjectionConfig | null>(null);
   const [projectionMonth, setProjectionMonth] = useState('Oct 25');
   const [showNewProjection, setShowNewProjection] = useState(false);
+  const [showSavedProjections, setShowSavedProjections] = useState(false);
+  const [showDetailedResults, setShowDetailedResults] = useState(false);
+  const [activeResultsTab, setActiveResultsTab] = useState('summary');
   
   const [newProjection, setNewProjection] = useState<Partial<ProjectionConfig>>({
     name: '',
     startDate: '2025-10-01',
     endDate: '2026-09-30',
-    retentionRate: 85,
-    discountRate: 10,
-    scholarshipRate: 15,
+    intercycleRetention: 85,
+    intracycleRetention: 92,
+    tuitionDiscount: 10,
+    enrollmentDiscount: 15,
     campus: 'all',
     program: 'all',
     modality: 'all',
     brand: 'all'
   });
+
+  // Datos de ejemplo para proyección anual 2026
+  const projectionResults2026 = {
+    summary: {
+      totalStudents: 2847,
+      niStudents: 854,
+      riStudents: 1993,
+      totalGrossRevenue: 156800000,
+      totalDiscounts: 18400000,
+      totalNetRevenue: 138400000
+    },
+    monthlyData: [
+      {
+        month: 'Enero',
+        students: { ni: 71, ri: 166, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Febrero',
+        students: { ni: 45, ri: 192, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Marzo',
+        students: { ni: 89, ri: 148, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Abril',
+        students: { ni: 67, ri: 170, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Mayo',
+        students: { ni: 52, ri: 185, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      },
+      {
+        month: 'Junio',
+        students: { ni: 78, ri: 159, total: 237 },
+        inscriptions: {
+          price: 12500,
+          discountPercent: 8,
+          discountAmount: 237000,
+          netAmount: 2725500
+        },
+        tuitions: {
+          price: 8500,
+          discountPercent: 12,
+          discountAmount: 241560,
+          netAmount: 1773440
+        },
+        totals: {
+          grossRevenue: 4777500,
+          totalDiscount: 478560,
+          netRevenue: 4298940
+        }
+      }
+    ]
+  };
+
+  // Función para calcular resultados detallados
+  const calculateDetailedResults = (params: any) => {
+    const baseEnrollment = params.activeEnrollment || 150;
+    const intercycleRate = params.intercycleRetention / 100;
+    const intracycleRate = params.intracycleRetention / 100;
+    const tuitionDiscountRate = params.tuitionDiscount / 100;
+    const enrollmentDiscountRate = params.enrollmentDiscount / 100;
+    
+    // Cálculo de estudiantes
+    const totalRetained = Math.round(baseEnrollment * intercycleRate * intracycleRate);
+    const newStudents = Math.round(totalRetained * 0.3); // 30% nuevos ingresos
+    const returningStudents = totalRetained - newStudents; // RI (incluye RA)
+    
+    // Precios base
+    const baseEnrollmentPrice = 12500;
+    const baseTuitionPrice = 8500;
+    
+    // Cálculos de inscripciones
+    const enrollmentRevenue = totalRetained * baseEnrollmentPrice;
+    const enrollmentDiscountAmount = enrollmentRevenue * enrollmentDiscountRate;
+    const netEnrollmentRevenue = enrollmentRevenue - enrollmentDiscountAmount;
+    
+    // Cálculos de colegiaturas (asumiendo 5 mensualidades por período)
+    const tuitionRevenue = totalRetained * baseTuitionPrice * 5;
+    const tuitionDiscountAmount = tuitionRevenue * tuitionDiscountRate;
+    const netTuitionRevenue = tuitionRevenue - tuitionDiscountAmount;
+    
+    // Totales
+    const totalRevenue = enrollmentRevenue + tuitionRevenue;
+    const totalDiscount = enrollmentDiscountAmount + tuitionDiscountAmount;
+    const totalNetRevenue = netEnrollmentRevenue + netTuitionRevenue;
+    
+    return {
+      students: {
+        total: totalRetained,
+        newStudents: newStudents,
+        returningStudents: returningStudents
+      },
+      enrollment: {
+        price: baseEnrollmentPrice,
+        discountPercent: params.enrollmentDiscount,
+        revenue: enrollmentRevenue,
+        discountAmount: enrollmentDiscountAmount,
+        netRevenue: netEnrollmentRevenue
+      },
+      tuition: {
+        price: baseTuitionPrice,
+        discountPercent: params.tuitionDiscount,
+        revenue: tuitionRevenue,
+        discountAmount: tuitionDiscountAmount,
+        netRevenue: netTuitionRevenue
+      },
+      totals: {
+        totalRevenue,
+        totalDiscount,
+        totalNetRevenue
+      }
+    };
+  };
+
+  const detailedResults = calculateDetailedResults(newProjection);
 
   const recordsPerPage = 50;
 
@@ -61,9 +268,10 @@ const HistoricalEnrollment: React.FC = () => {
       name: 'Proyección Q4 2025',
       startDate: '2025-10-01',
       endDate: '2025-12-31',
-      retentionRate: 85,
-      discountRate: 10,
-      scholarshipRate: 15,
+      intercycleRetention: 85,
+      intracycleRetention: 92,
+      tuitionDiscount: 10,
+      enrollmentDiscount: 15,
       campus: 'Ciudad de México',
       program: 'Ingeniería en Sistemas',
       modality: 'Presencial',
@@ -75,9 +283,10 @@ const HistoricalEnrollment: React.FC = () => {
       name: 'Proyección Anual 2026',
       startDate: '2026-01-01',
       endDate: '2026-12-31',
-      retentionRate: 88,
-      discountRate: 12,
-      scholarshipRate: 18,
+      intercycleRetention: 88,
+      intracycleRetention: 94,
+      tuitionDiscount: 12,
+      enrollmentDiscount: 18,
       campus: 'all',
       program: 'all',
       modality: 'all',
@@ -134,14 +343,16 @@ const HistoricalEnrollment: React.FC = () => {
     const baseEnrollmentPrice = 12500;
     
     return futureMonths.slice(0, 12).map((month, index) => {
-      const retentionFactor = Math.pow((config.retentionRate || 85) / 100, index / 12);
-      const students = Math.round(baseStudents * retentionFactor);
+      const intercycleRetentionFactor = Math.pow((config.intercycleRetention || 85) / 100, index / 12);
+      const intracycleRetentionFactor = (config.intracycleRetention || 92) / 100;
+      const combinedRetentionFactor = intercycleRetentionFactor * intracycleRetentionFactor;
+      const students = Math.round(baseStudents * combinedRetentionFactor);
       
-      const discountFactor = 1 - (config.discountRate || 10) / 100;
-      const scholarshipFactor = 1 - (config.scholarshipRate || 15) / 100;
+      const tuitionDiscountFactor = 1 - (config.tuitionDiscount || 10) / 100;
+      const enrollmentDiscountFactor = 1 - (config.enrollmentDiscount || 15) / 100;
       
-      const effectiveTuitionPrice = baseTuitionPrice * discountFactor * scholarshipFactor;
-      const effectiveEnrollmentPrice = baseEnrollmentPrice * discountFactor * scholarshipFactor;
+      const effectiveTuitionPrice = baseTuitionPrice * tuitionDiscountFactor;
+      const effectiveEnrollmentPrice = baseEnrollmentPrice * enrollmentDiscountFactor;
       
       const tuitionCount = students;
       const enrollmentCount = index === 0 ? students : Math.round(students * 0.1); // Solo 10% se inscribe en meses posteriores
@@ -270,8 +481,21 @@ const HistoricalEnrollment: React.FC = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Matrícula Histórica</h1>
-        <p className="text-gray-600 mt-2">Análisis histórico de matrícula por período</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Matrícula Histórica</h1>
+            <p className="text-gray-600 mt-2">Análisis histórico de matrícula por período</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => alert('Función de reporte de errores - En desarrollo')}
+              className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Reportar Error
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Tabs principales */}
@@ -647,14 +871,257 @@ const HistoricalEnrollment: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Resultados detallados */}
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Resultados de Proyección</h3>
+                    <button
+                      onClick={() => setShowDetailedResults(!showDetailedResults)}
+                      className="flex items-center px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                      {showDetailedResults ? 'Ocultar Detalle' : 'Ver Detalle Completo'}
+                      <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showDetailedResults ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
+
+                  {showDetailedResults && (
+                    <div className="bg-gray-50 rounded-lg p-6">
+                      {/* Resumen de estudiantes */}
+                      <div className="mb-6">
+                        <h4 className="text-md font-semibold text-gray-800 mb-3">Desglose de Estudiantes</h4>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-600">Total Estudiantes</p>
+                            <p className="text-2xl font-bold text-blue-600">{detailedResults.students.total}</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-600">NI (Nuevo Ingreso)</p>
+                            <p className="text-2xl font-bold text-green-600">{detailedResults.students.newStudents}</p>
+                            <p className="text-xs text-gray-500">{((detailedResults.students.newStudents / detailedResults.students.total) * 100).toFixed(1)}%</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-600">RI (Reingreso + RA)</p>
+                            <p className="text-2xl font-bold text-purple-600">{detailedResults.students.returningStudents}</p>
+                            <p className="text-xs text-gray-500">{((detailedResults.students.returningStudents / detailedResults.students.total) * 100).toFixed(1)}%</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tabla detallada de ingresos */}
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="bg-gray-100 px-6 py-3 border-b border-gray-200">
+                          <h4 className="text-md font-semibold text-gray-800">Desglose Financiero Detallado</h4>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Concepto</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Base</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">% Descuento</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">$ Ingreso Bruto</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">$ Descuento</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">$ Ingreso Neto</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {/* Inscripciones */}
+                              <tr className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900">Inscripciones</div>
+                                      <div className="text-xs text-gray-500">{detailedResults.students.total} estudiantes</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                  ${detailedResults.enrollment.price.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-orange-600 font-medium">
+                                  {detailedResults.enrollment.discountPercent}%
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                  ${detailedResults.enrollment.revenue.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600 font-medium">
+                                  -${detailedResults.enrollment.discountAmount.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-green-600">
+                                  ${detailedResults.enrollment.netRevenue.toLocaleString()}
+                                </td>
+                              </tr>
+                              
+                              {/* Colegiaturas */}
+                              <tr className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900">Colegiaturas</div>
+                                      <div className="text-xs text-gray-500">{detailedResults.students.total} × 5 meses</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                  ${detailedResults.tuition.price.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-orange-600 font-medium">
+                                  {detailedResults.tuition.discountPercent}%
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                  ${detailedResults.tuition.revenue.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600 font-medium">
+                                  -${detailedResults.tuition.discountAmount.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-green-600">
+                                  ${detailedResults.tuition.netRevenue.toLocaleString()}
+                                </td>
+                              </tr>
+                            </tbody>
+                            
+                            {/* Totales */}
+                            <tfoot className="bg-gray-100 border-t-2 border-gray-300">
+                              <tr>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                  TOTALES
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                  -
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                  -
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-600">
+                                  ${detailedResults.totals.totalRevenue.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-red-600">
+                                  -${detailedResults.totals.totalDiscount.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-green-700 text-lg">
+                                  ${detailedResults.totals.totalNetRevenue.toLocaleString()}
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Resumen ejecutivo */}
+                      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <h5 className="text-sm font-medium text-blue-700 mb-1">Ingreso Total Bruto</h5>
+                          <p className="text-xl font-bold text-blue-900">${detailedResults.totals.totalRevenue.toLocaleString()}</p>
+                          <p className="text-xs text-blue-600 mt-1">Antes de descuentos</p>
+                        </div>
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <h5 className="text-sm font-medium text-red-700 mb-1">Descuento Total</h5>
+                          <p className="text-xl font-bold text-red-900">${detailedResults.totals.totalDiscount.toLocaleString()}</p>
+                          <p className="text-xs text-red-600 mt-1">
+                            {((detailedResults.totals.totalDiscount / detailedResults.totals.totalRevenue) * 100).toFixed(1)}% del ingreso bruto
+                          </p>
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <h5 className="text-sm font-medium text-green-700 mb-1">Ingreso Neto Final</h5>
+                          <p className="text-xl font-bold text-green-900">${detailedResults.totals.totalNetRevenue.toLocaleString()}</p>
+                          <p className="text-xs text-green-600 mt-1">Después de descuentos</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
           {activeTab === 'proyecciones' && (
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div>
+              {/* Barra desplegable de proyecciones guardadas */}
+              <div className="bg-gray-50 rounded-xl border border-gray-200 mb-6">
+                <button
+                  onClick={() => setShowSavedProjections(!showSavedProjections)}
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-100 transition-colors rounded-xl"
+                >
+                  <div className="flex items-center">
+                    <Calculator className="w-5 h-5 text-purple-600 mr-2" />
+                    <span className="font-medium text-gray-900">
+                      Proyecciones Guardadas ({savedProjections.length})
+                    </span>
+                    {selectedProjection && (
+                      <span className="ml-2 text-sm text-purple-600">
+                        - {selectedProjection.name}
+                      </span>
+                    )}
+                  </div>
+                  {showSavedProjections ? (
+                    <ChevronUp className="w-5 h-5 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-500" />
+                  )}
+                </button>
+                
+                {showSavedProjections && (
+                  <div className="border-t border-gray-200 p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {savedProjections.map((projection) => (
+                        <div 
+                          key={projection.id}
+                          onClick={() => {
+                            setSelectedProjection(projection);
+                            setShowSavedProjections(false);
+                          }}
+                          className={`p-4 cursor-pointer transition-colors rounded-lg border-2 ${
+                            selectedProjection?.id === projection.id 
+                              ? 'bg-blue-50 border-blue-300' 
+                              : 'bg-white border-gray-200 hover:border-blue-200 hover:bg-blue-50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-gray-900 text-sm">{projection.name}</h4>
+                            <button className="text-blue-600 hover:text-blue-800">
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </div>
+                          
+                          <div className="space-y-1 text-xs text-gray-600 mb-3">
+                            <div className="flex justify-between">
+                              <span>Retención Interciclo:</span>
+                              <span className="font-medium">{projection.intercycleRetention}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Retención Intraciclo:</span>
+                              <span className="font-medium">{projection.intracycleRetention}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Desc. Colegiaturas:</span>
+                              <span className="font-medium">{projection.tuitionDiscount}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Desc. Inscripciones:</span>
+                              <span className="font-medium">{projection.enrollmentDiscount}%</span>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-2 border-t border-gray-200">
+                            <p className="text-xs text-gray-500">
+                              {projection.campus === 'all' ? 'Todos los campus' : projection.campus}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Creado: {new Date(projection.createdAt).toLocaleDateString('es-MX')}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Panel principal de configuración */}
-              <div className="lg:col-span-3">
+              <div>
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
                   <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center justify-between">
@@ -662,13 +1129,22 @@ const HistoricalEnrollment: React.FC = () => {
                         <Calculator className="w-5 h-5 text-blue-600 mr-2" />
                         <h2 className="text-lg font-semibold text-gray-900">Configurar Proyección</h2>
                       </div>
-                      <button 
-                        onClick={() => setShowNewProjection(!showNewProjection)}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Nueva Proyección
-                      </button>
+                      <div className="flex items-center space-x-3">
+                        <button 
+                          onClick={() => alert('Función de reporte de errores - En desarrollo')}
+                          className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                        >
+                          <AlertTriangle className="w-4 h-4 mr-2" />
+                          Reportar Error
+                        </button>
+                        <button 
+                          onClick={() => setShowNewProjection(!showNewProjection)}
+                          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Nueva Proyección
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -718,44 +1194,57 @@ const HistoricalEnrollment: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            % Retención: {newProjection.retentionRate}%
-                          </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">% Retención Interciclo</label>
                           <input
-                            type="range"
-                            min="50"
+                            type="number"
+                            min="0"
                             max="100"
-                            value={newProjection.retentionRate || 85}
-                            onChange={(e) => setNewProjection(prev => ({ ...prev, retentionRate: parseInt(e.target.value) }))}
-                            className="w-full"
+                            step="0.1"
+                            value={newProjection.intercycleRetention || 85}
+                            onChange={(e) => setNewProjection(prev => ({ ...prev, intercycleRetention: parseFloat(e.target.value) }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="85.0"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            % Descuento: {newProjection.discountRate}%
-                          </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">% Retención Intraciclo</label>
                           <input
-                            type="range"
+                            type="number"
                             min="0"
-                            max="50"
-                            value={newProjection.discountRate || 10}
-                            onChange={(e) => setNewProjection(prev => ({ ...prev, discountRate: parseInt(e.target.value) }))}
-                            className="w-full"
+                            max="100"
+                            step="0.1"
+                            value={newProjection.intracycleRetention || 92}
+                            onChange={(e) => setNewProjection(prev => ({ ...prev, intracycleRetention: parseFloat(e.target.value) }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="92.0"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            % Becas: {newProjection.scholarshipRate}%
-                          </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">% Descuento en Colegiaturas</label>
                           <input
-                            type="range"
+                            type="number"
                             min="0"
                             max="50"
-                            value={newProjection.scholarshipRate || 15}
-                            onChange={(e) => setNewProjection(prev => ({ ...prev, scholarshipRate: parseInt(e.target.value) }))}
-                            className="w-full"
+                            step="0.1"
+                            value={newProjection.tuitionDiscount || 10}
+                            onChange={(e) => setNewProjection(prev => ({ ...prev, tuitionDiscount: parseFloat(e.target.value) }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="10.0"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">% Descuento en Inscripciones</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="50"
+                            step="0.1"
+                            value={newProjection.enrollmentDiscount || 15}
+                            onChange={(e) => setNewProjection(prev => ({ ...prev, enrollmentDiscount: parseFloat(e.target.value) }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="15.0"
                           />
                         </div>
                       </div>
@@ -807,84 +1296,311 @@ const HistoricalEnrollment: React.FC = () => {
                           const monthData = projections.find(p => p.month === projectionMonth) || projections[0];
                           
                           return (
-                            <div>
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                                <div className="bg-blue-50 rounded-lg p-4 text-center">
-                                  <h4 className="text-2xl font-bold text-blue-900">{monthData.students}</h4>
-                                  <p className="text-sm text-blue-700">Estudiantes Proyectados</p>
+                            <div className="space-y-6">
+                              {/* Resultados de Proyección Detallados */}
+                              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                                <div className="p-6 border-b border-gray-200">
+                                  <h3 className="text-lg font-semibold text-gray-900">Resultados de Proyección - {selectedMonth}</h3>
+                                  <p className="text-sm text-gray-600 mt-1">Análisis financiero detallado por categorías</p>
                                 </div>
-                                <div className="bg-green-50 rounded-lg p-4 text-center">
-                                  <h4 className="text-2xl font-bold text-green-900">{monthData.tuitionCount}</h4>
-                                  <p className="text-sm text-green-700">Colegiaturas</p>
-                                  <p className="text-xs text-green-600">${monthData.tuitionRevenue.toLocaleString()}</p>
-                                </div>
-                                <div className="bg-purple-50 rounded-lg p-4 text-center">
-                                  <h4 className="text-2xl font-bold text-purple-900">{monthData.enrollmentCount}</h4>
-                                  <p className="text-sm text-purple-700">Inscripciones</p>
-                                  <p className="text-xs text-purple-600">${monthData.enrollmentRevenue.toLocaleString()}</p>
-                                </div>
-                                <div className="bg-orange-50 rounded-lg p-4 text-center">
-                                  <h4 className="text-2xl font-bold text-orange-900">${(monthData.totalRevenue / 1000000).toFixed(1)}M</h4>
-                                  <p className="text-sm text-orange-700">Ingreso Total</p>
-                                </div>
-                              </div>
+                                
+                                <div className="p-6">
+                                  {/* Resumen Ejecutivo */}
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                                      <div className="flex items-center justify-between">
+                                        <div className="p-3 rounded-lg bg-blue-100">
+                                          <DollarSign className="w-6 h-6 text-blue-600" />
+                                        </div>
+                                      </div>
+                                      <div className="mt-4">
+                                        <h3 className="text-2xl font-bold text-blue-900">$4.2M</h3>
+                                        <p className="text-blue-700 text-sm mt-1">Ingreso Total Bruto</p>
+                                        <p className="text-xs text-blue-600 mt-1">Antes de descuentos</p>
+                                      </div>
+                                    </div>
 
-                              {/* Desglose por categorías */}
-                              <div className="bg-gray-50 rounded-lg p-4">
-                                <h4 className="font-semibold text-gray-900 mb-3">Desglose por Categorías</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-sm text-gray-600 mb-2">Por Campus:</p>
-                                    <div className="space-y-1">
-                                      <div className="flex justify-between text-sm">
-                                        <span>Ciudad de México</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.4)} estudiantes</span>
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                                      <div className="flex items-center justify-between">
+                                        <div className="p-3 rounded-lg bg-red-100">
+                                          <TrendingDown className="w-6 h-6 text-red-600" />
+                                        </div>
                                       </div>
-                                      <div className="flex justify-between text-sm">
-                                        <span>Guadalajara</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.35)} estudiantes</span>
+                                      <div className="mt-4">
+                                        <h3 className="text-2xl font-bold text-red-900">$540K</h3>
+                                        <p className="text-red-700 text-sm mt-1">Descuentos Totales</p>
+                                        <p className="text-xs text-red-600 mt-1">12.9% del bruto</p>
                                       </div>
-                                      <div className="flex justify-between text-sm">
-                                        <span>Monterrey</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.25)} estudiantes</span>
+                                    </div>
+
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                                      <div className="flex items-center justify-between">
+                                        <div className="p-3 rounded-lg bg-green-100">
+                                          <TrendingUp className="w-6 h-6 text-green-600" />
+                                        </div>
+                                      </div>
+                                      <div className="mt-4">
+                                        <h3 className="text-2xl font-bold text-green-900">$3.66M</h3>
+                                        <p className="text-green-700 text-sm mt-1">Ingreso Neto Final</p>
+                                        <p className="text-xs text-green-600 mt-1">Ingreso real proyectado</p>
                                       </div>
                                     </div>
                                   </div>
-                                  <div>
-                                    <p className="text-sm text-gray-600 mb-2">Por Modalidad:</p>
-                                    <div className="space-y-1">
-                                      <div className="flex justify-between text-sm">
-                                        <span>Presencial</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.5)} estudiantes</span>
+
+                                  {/* Desglose Detallado por Mes */}
+                                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                      <div className="flex items-center justify-between">
+                                        <h4 className="text-lg font-semibold text-gray-900">
+                                          Desglose Financiero Detallado - {selectedMonth}
+                                        </h4>
+                                        <div className="text-sm text-gray-600">
+                                          <span className="font-medium">Total Estudiantes: 847</span>
+                                          <span className="mx-2">•</span>
+                                          <span>NI: 245 (28.9%) | RI: 602 (71.1%)</span>
+                                        </div>
                                       </div>
-                                      <div className="flex justify-between text-sm">
-                                        <span>Online</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.3)} estudiantes</span>
-                                      </div>
-                                      <div className="flex justify-between text-sm">
-                                        <span>Sabatina</span>
-                                        <span className="font-medium">{Math.round(monthData.students * 0.2)} estudiantes</span>
-                                      </div>
+                                    </div>
+                                    
+                                    <div className="overflow-x-auto">
+                                      <table className="w-full">
+                                        <thead className="bg-gray-50">
+                                          <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Concepto
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Estudiantes
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Precio Base
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              % Descuento
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              $ Descuento
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              $ Neto
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                          {/* Sección: Desglose de Estudiantes */}
+                                          <tr className="bg-blue-25">
+                                            <td colSpan={6} className="px-6 py-3 bg-blue-50 border-b border-blue-200">
+                                              <h5 className="text-sm font-semibold text-blue-900 flex items-center">
+                                                <Users className="w-4 h-4 mr-2" />
+                                                Desglose de Estudiantes
+                                              </h5>
+                                            </td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              NI (Nuevo Ingreso)
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">245</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">28.9%</td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              RI (Reingreso + RA)
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">602</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">71.1%</td>
+                                          </tr>
+
+                                          {/* Sección: Inscripciones */}
+                                          <tr>
+                                            <td colSpan={6} className="px-6 py-3 bg-purple-50 border-b border-purple-200">
+                                              <h5 className="text-sm font-semibold text-purple-900 flex items-center">
+                                                <Calendar className="w-4 h-4 mr-2" />
+                                                Inscripciones
+                                              </h5>
+                                            </td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              Inscripción NI
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">245</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$12,500</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">15%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">$459,375</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">$2,603,125</td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              Inscripción RI
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">602</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$8,500</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">8%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">$409,360</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">$4,707,640</td>
+                                          </tr>
+
+                                          {/* Sección: Colegiaturas */}
+                                          <tr>
+                                            <td colSpan={6} className="px-6 py-3 bg-orange-50 border-b border-orange-200">
+                                              <h5 className="text-sm font-semibold text-orange-900 flex items-center">
+                                                <DollarSign className="w-4 h-4 mr-2" />
+                                                Colegiaturas (5 meses)
+                                              </h5>
+                                            </td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              Colegiatura NI
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">245 × 5</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$8,500</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">12%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">$1,249,500</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">$9,163,000</td>
+                                          </tr>
+                                          <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                              Colegiatura RI
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">602 × 5</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$7,200</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">10%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">$2,167,200</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">$19,504,800</td>
+                                          </tr>
+
+                                          {/* Totales */}
+                                          <tr className="bg-gray-100 border-t-2 border-gray-300">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                              TOTALES GENERALES
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">847</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">$42,200,000</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">12.9%</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600">$5,440,000</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">$36,760,000</td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+
+                                  {/* Análisis de Impacto */}
+                                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                      <h5 className="text-sm font-medium text-blue-700 mb-2">Eficiencia de Inscripciones</h5>
+                                      <p className="text-2xl font-bold text-blue-900">87.1%</p>
+                                      <p className="text-xs text-blue-600">Ingreso neto vs bruto</p>
+                                    </div>
+                                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                      <h5 className="text-sm font-medium text-orange-700 mb-2">Eficiencia de Colegiaturas</h5>
+                                      <p className="text-2xl font-bold text-orange-900">89.2%</p>
+                                      <p className="text-xs text-orange-600">Ingreso neto vs bruto</p>
+                                    </div>
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                      <h5 className="text-sm font-medium text-green-700 mb-2">Ingreso Promedio por Estudiante</h5>
+                                      <p className="text-2xl font-bold text-green-900">$43,400</p>
+                                      <p className="text-xs text-green-600">Anual neto estimado</p>
                                     </div>
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Suma global */}
-                              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-semibold text-blue-900 mb-2">Resumen Global - {projectionMonth}</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div className="text-center">
-                                    <p className="text-2xl font-bold text-blue-900">{monthData.students}</p>
-                                    <p className="text-sm text-blue-700">Total Estudiantes</p>
+                              {/* Desglose por Categorías */}
+                              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                                <div className="p-6 border-b border-gray-200">
+                                  <h3 className="text-lg font-semibold text-gray-900">Desglose por Categorías</h3>
+                                  <p className="text-sm text-gray-600 mt-1">Distribución de estudiantes por diferentes criterios</p>
+                                </div>
+                                
+                                <div className="p-6">
+                                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                                    <div className="bg-blue-50 rounded-lg p-4 text-center">
+                                      <h4 className="text-2xl font-bold text-blue-900">{monthData.students}</h4>
+                                      <p className="text-sm text-blue-700">Estudiantes Proyectados</p>
+                                    </div>
+                                    <div className="bg-green-50 rounded-lg p-4 text-center">
+                                      <h4 className="text-2xl font-bold text-green-900">{monthData.tuitionCount}</h4>
+                                      <p className="text-sm text-green-700">Colegiaturas</p>
+                                      <p className="text-xs text-green-600">${monthData.tuitionRevenue.toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-purple-50 rounded-lg p-4 text-center">
+                                      <h4 className="text-2xl font-bold text-purple-900">{monthData.enrollmentCount}</h4>
+                                      <p className="text-sm text-purple-700">Inscripciones</p>
+                                      <p className="text-xs text-purple-600">${monthData.enrollmentRevenue.toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-orange-50 rounded-lg p-4 text-center">
+                                      <h4 className="text-2xl font-bold text-orange-900">${(monthData.totalRevenue / 1000000).toFixed(1)}M</h4>
+                                      <p className="text-sm text-orange-700">Ingreso Total</p>
+                                    </div>
                                   </div>
-                                  <div className="text-center">
-                                    <p className="text-2xl font-bold text-blue-900">{monthData.tuitionCount + monthData.enrollmentCount}</p>
-                                    <p className="text-sm text-blue-700">Total Transacciones</p>
+
+                                  {/* Desglose por categorías */}
+                                  <div className="bg-gray-50 rounded-lg p-4">
+                                    <h4 className="font-semibold text-gray-900 mb-3">Desglose por Categorías</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <p className="text-sm text-gray-600 mb-2">Por Campus:</p>
+                                        <div className="space-y-1">
+                                          <div className="flex justify-between text-sm">
+                                            <span>Ciudad de México</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.4)} estudiantes</span>
+                                          </div>
+                                          <div className="flex justify-between text-sm">
+                                            <span>Guadalajara</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.35)} estudiantes</span>
+                                          </div>
+                                          <div className="flex justify-between text-sm">
+                                            <span>Monterrey</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.25)} estudiantes</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-600 mb-2">Por Modalidad:</p>
+                                        <div className="space-y-1">
+                                          <div className="flex justify-between text-sm">
+                                            <span>Presencial</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.5)} estudiantes</span>
+                                          </div>
+                                          <div className="flex justify-between text-sm">
+                                            <span>Online</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.3)} estudiantes</span>
+                                          </div>
+                                          <div className="flex justify-between text-sm">
+                                            <span>Sabatina</span>
+                                            <span className="font-medium">{Math.round(monthData.students * 0.2)} estudiantes</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div className="text-center">
-                                    <p className="text-2xl font-bold text-blue-900">${(monthData.totalRevenue / 1000000).toFixed(2)}M</p>
-                                    <p className="text-sm text-blue-700">Ingreso Total Proyectado</p>
+
+                                  {/* Suma global */}
+                                  <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h4 className="font-semibold text-blue-900 mb-2">Resumen Global - {projectionMonth}</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                      <div className="text-center">
+                                        <p className="text-2xl font-bold text-blue-900">{monthData.students}</p>
+                                        <p className="text-sm text-blue-700">Total Estudiantes</p>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="text-2xl font-bold text-blue-900">{monthData.tuitionCount + monthData.enrollmentCount}</p>
+                                        <p className="text-sm text-blue-700">Total Transacciones</p>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="text-2xl font-bold text-blue-900">${(monthData.totalRevenue / 1000000).toFixed(2)}M</p>
+                                        <p className="text-sm text-blue-700">Ingreso Total Proyectado</p>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -896,59 +1612,273 @@ const HistoricalEnrollment: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* Barra lateral de proyecciones guardadas */}
-              <div className="lg:col-span-1">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                  <div className="p-6 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Proyecciones Guardadas</h3>
+        {/* Sección de Resultados - Proyección Anual 2026 */}
+        {activeTab === 'projections' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Resultados - Proyección Anual 2026</h2>
+                  <p className="text-sm text-gray-600 mt-1">Desglose detallado de ingresos y estudiantes proyectados</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setActiveResultsTab('summary')}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      activeResultsTab === 'summary'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Resumen
+                  </button>
+                  <button
+                    onClick={() => setActiveResultsTab('monthly')}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      activeResultsTab === 'monthly'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Detalle Mes a Mes
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {activeResultsTab === 'summary' && (
+                <div>
+                  {/* Resumen Ejecutivo */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                      <h3 className="text-sm font-medium text-blue-700 mb-2">Total Estudiantes</h3>
+                      <p className="text-3xl font-bold text-blue-900">{projectionResults2026.summary.totalStudents.toLocaleString()}</p>
+                      <div className="mt-3 text-sm text-blue-600">
+                        <p>NI: {projectionResults2026.summary.niStudents.toLocaleString()} ({Math.round((projectionResults2026.summary.niStudents / projectionResults2026.summary.totalStudents) * 100)}%)</p>
+                        <p>RI: {projectionResults2026.summary.riStudents.toLocaleString()} ({Math.round((projectionResults2026.summary.riStudents / projectionResults2026.summary.totalStudents) * 100)}%)</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                      <h3 className="text-sm font-medium text-red-700 mb-2">Descuentos Totales</h3>
+                      <p className="text-3xl font-bold text-red-900">${(projectionResults2026.summary.totalDiscounts / 1000000).toFixed(1)}M</p>
+                      <p className="text-sm text-red-600 mt-1">
+                        {Math.round((projectionResults2026.summary.totalDiscounts / projectionResults2026.summary.totalGrossRevenue) * 100)}% del ingreso bruto
+                      </p>
+                    </div>
+
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                      <h3 className="text-sm font-medium text-green-700 mb-2">Ingreso Neto</h3>
+                      <p className="text-3xl font-bold text-green-900">${(projectionResults2026.summary.totalNetRevenue / 1000000).toFixed(1)}M</p>
+                      <p className="text-sm text-green-600 mt-1">
+                        Después de descuentos
+                      </p>
+                    </div>
                   </div>
-                  <div className="divide-y divide-gray-200">
-                    {savedProjections.map((projection) => (
-                      <div 
-                        key={projection.id}
-                        onClick={() => setSelectedProjection(projection)}
-                        className={`p-4 cursor-pointer transition-colors ${
-                          selectedProjection?.id === projection.id ? 'bg-blue-50 border-r-2 border-blue-500' : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-gray-900 text-sm">{projection.name}</h4>
-                          <button className="text-blue-600 hover:text-blue-800">
-                            <Eye className="w-4 h-4" />
-                          </button>
+
+                  {/* Tabla Resumen Anual */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full border border-gray-200 rounded-lg">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Concepto
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Cantidad/Porcentaje
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Monto
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        <tr className="bg-blue-50">
+                          <td className="px-6 py-4 text-sm font-medium text-blue-900" colSpan={3}>
+                            ESTUDIANTES
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">NI (Nuevo Ingreso)</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">{projectionResults2026.summary.niStudents.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">-</td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">RI (Reingreso)</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">{projectionResults2026.summary.riStudents.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">-</td>
+                        </tr>
+                        <tr className="bg-orange-50">
+                          <td className="px-6 py-4 text-sm font-medium text-orange-900" colSpan={3}>
+                            INGRESOS BRUTOS
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">Inscripciones</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">-</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">${(projectionResults2026.summary.totalGrossRevenue * 0.4 / 1000000).toFixed(1)}M</td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">Colegiaturas</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">-</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">${(projectionResults2026.summary.totalGrossRevenue * 0.6 / 1000000).toFixed(1)}M</td>
+                        </tr>
+                        <tr className="bg-red-50">
+                          <td className="px-6 py-4 text-sm font-medium text-red-900" colSpan={3}>
+                            DESCUENTOS
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">Descuento Inscripciones</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">8%</td>
+                          <td className="px-6 py-4 text-sm text-right text-red-600">${(projectionResults2026.summary.totalDiscounts * 0.4 / 1000000).toFixed(1)}M</td>
+                        </tr>
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">Descuento Colegiaturas</td>
+                          <td className="px-6 py-4 text-sm text-right text-gray-900">12%</td>
+                          <td className="px-6 py-4 text-sm text-right text-red-600">${(projectionResults2026.summary.totalDiscounts * 0.6 / 1000000).toFixed(1)}M</td>
+                        </tr>
+                        <tr className="bg-green-50 font-medium">
+                          <td className="px-6 py-4 text-sm text-green-900">INGRESO NETO TOTAL</td>
+                          <td className="px-6 py-4 text-sm text-right text-green-900">-</td>
+                          <td className="px-6 py-4 text-sm text-right text-green-900">${(projectionResults2026.summary.totalNetRevenue / 1000000).toFixed(1)}M</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {activeResultsTab === 'monthly' && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Desglose Mes a Mes - 2026</h3>
+                  
+                  <div className="space-y-8">
+                    {projectionResults2026.monthlyData.map((monthData, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+                          <h4 className="text-md font-semibold text-gray-900">{monthData.month} 2026</h4>
                         </div>
                         
-                        <div className="space-y-1 text-xs text-gray-600">
-                          <div className="flex justify-between">
-                            <span>Retención:</span>
-                            <span className="font-medium">{projection.retentionRate}%</span>
+                        <div className="p-6">
+                          {/* Resumen del mes */}
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                              <h5 className="text-xs font-medium text-blue-700 mb-1">Total Estudiantes</h5>
+                              <p className="text-xl font-bold text-blue-900">{monthData.students.total}</p>
+                              <div className="text-xs text-blue-600 mt-1">
+                                <p>NI: {monthData.students.ni} | RI: {monthData.students.ri}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                              <h5 className="text-xs font-medium text-orange-700 mb-1">Ingreso Bruto</h5>
+                              <p className="text-xl font-bold text-orange-900">${(monthData.totals.grossRevenue / 1000000).toFixed(2)}M</p>
+                            </div>
+                            
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                              <h5 className="text-xs font-medium text-red-700 mb-1">Descuentos</h5>
+                              <p className="text-xl font-bold text-red-900">${(monthData.totals.totalDiscount / 1000).toFixed(0)}K</p>
+                            </div>
+                            
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                              <h5 className="text-xs font-medium text-green-700 mb-1">Ingreso Neto</h5>
+                              <p className="text-xl font-bold text-green-900">${(monthData.totals.netRevenue / 1000000).toFixed(2)}M</p>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span>Descuento:</span>
-                            <span className="font-medium">{projection.discountRate}%</span>
+
+                          {/* Tabla detallada del mes */}
+                          <div className="overflow-x-auto">
+                            <table className="w-full border border-gray-200 rounded-lg">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    Concepto
+                                  </th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    Precio Base
+                                  </th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    % Descuento
+                                  </th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    $ Descuento
+                                  </th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                    $ Neto
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                <tr className="bg-blue-50">
+                                  <td className="px-4 py-3 text-sm font-medium text-blue-900" colSpan={5}>
+                                    DESGLOSE DE ESTUDIANTES
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-3 text-sm text-gray-900">NI (Nuevo Ingreso)</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">{monthData.students.ni} estudiantes</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-3 text-sm text-gray-900">RI (Reingreso)</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">{monthData.students.ri} estudiantes</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                </tr>
+                                
+                                <tr className="bg-purple-50">
+                                  <td className="px-4 py-3 text-sm font-medium text-purple-900" colSpan={5}>
+                                    INSCRIPCIONES
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-3 text-sm text-gray-900">Inscripciones</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">${monthData.inscriptions.price.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">{monthData.inscriptions.discountPercent}%</td>
+                                  <td className="px-4 py-3 text-sm text-right text-red-600">${monthData.inscriptions.discountAmount.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-green-600">${monthData.inscriptions.netAmount.toLocaleString()}</td>
+                                </tr>
+                                
+                                <tr className="bg-yellow-50">
+                                  <td className="px-4 py-3 text-sm font-medium text-yellow-900" colSpan={5}>
+                                    COLEGIATURAS
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-3 text-sm text-gray-900">Colegiaturas</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">${monthData.tuitions.price.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">{monthData.tuitions.discountPercent}%</td>
+                                  <td className="px-4 py-3 text-sm text-right text-red-600">${monthData.tuitions.discountAmount.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-green-600">${monthData.tuitions.netAmount.toLocaleString()}</td>
+                                </tr>
+                                
+                                <tr className="bg-gray-100 font-medium">
+                                  <td className="px-4 py-3 text-sm text-gray-900">TOTALES DEL MES</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">${monthData.totals.grossRevenue.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-gray-900">-</td>
+                                  <td className="px-4 py-3 text-sm text-right text-red-600">${monthData.totals.totalDiscount.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right text-green-600">${monthData.totals.netRevenue.toLocaleString()}</td>
+                                </tr>
+                              </tbody>
+                            </table>
                           </div>
-                          <div className="flex justify-between">
-                            <span>Becas:</span>
-                            <span className="font-medium">{projection.scholarshipRate}%</span>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-2 pt-2 border-t border-gray-200">
-                          <p className="text-xs text-gray-500">
-                            {projection.campus === 'all' ? 'Todos los campus' : projection.campus}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Creado: {new Date(projection.createdAt).toLocaleDateString('es-MX')}
-                          </p>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
+              )}
             </div>
-          )}
+          </div>
+        )}
         </div>
       </div>
     </div>

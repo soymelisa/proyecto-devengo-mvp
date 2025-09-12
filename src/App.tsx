@@ -3,6 +3,7 @@ import Login from './components/Login';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import ProgramsCatalog from './components/ProgramsCatalog';
+import BrandCatalog from './components/BrandCatalog';
 import Projections from './components/Projections';
 import Reports from './components/Reports';
 import Campuses from './components/Campuses';
@@ -53,6 +54,8 @@ function App() {
         return <Dashboard />;
       case 'programs-catalog':
         return <ProgramsCatalog />;
+      case 'brand-catalog':
+        return <BrandCatalog />;
       case 'campuses':
         return <Campuses />;
       case 'calendar':
