@@ -537,6 +537,10 @@ const HistoricalEnrollment: React.FC = () => {
 
         <div className="p-6">
           {activeTab === 'resumen' && (
+            )
+            }
             <div>
               {/* Métricas principales */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+  )
+}
