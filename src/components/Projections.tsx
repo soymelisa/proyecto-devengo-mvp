@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
-import { Calculator, TrendingUp, Settings, Save, RotateCcw, Calendar, AlertTriangle } from 'lucide-react';
+import { Calculator, TrendingUp, Settings, Save, RotateCcw, Calendar, AlertTriangle, Plus, Eye, X } from 'lucide-react';
+
+interface ProjectionConfig {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  intercycleRetention: number;
+  intracycleRetention: number;
+  tuitionDiscount: number;
+  enrollmentDiscount: number;
+  campus: string;
+  program: string;
+  modality: string;
+  brand: string;
+  createdAt: string;
+}
 
 interface ProjectionParams {
   activeEnrollment: number;
@@ -29,6 +45,121 @@ const Projections: React.FC = () => {
   });
   const [selectedCampus, setSelectedCampus] = useState('Ciudad de México');
   const [selectedProgram, setSelectedProgram] = useState('Ingeniería en Sistemas');
+  const [selectedProjection, setSelectedProjection] = useState<ProjectionConfig | null>(null);
+  const [showNewProjection, setShowNewProjection] = useState(false);
+  const [showSavedProjections, setShowSavedProjections] = useState(false);
+  const [showDetailedResults, setShowDetailedResults] = useState(false);
+  const [activeResultsTab, setActiveResultsTab] = useState('summary');
+  
+  const [newProjection, setNewProjection] = useState<Partial<ProjectionConfig>>({
+    name: '',
+    startDate: '2025-10-01',
+    endDate: '2026-09-30',
+    intercycleRetention: 85,
+    intracycleRetention: 92,
+    tuitionDiscount: 10,
+    enrollmentDiscount: 15,
+    campus: 'all',
+    program: 'all',
+    modality: 'all',
+    brand: 'all'
+  });
+
+  // Mock de proyecciones guardadas
+  const savedProjections: ProjectionConfig[] = [
+    {
+      id: '1',
+      name: 'Proyección Q4 2025',
+      startDate: '2025-10-01',
+      endDate: '2025-12-31',
+      intercycleRetention: 85,
+      intracycleRetention: 92,
+      tuitionDiscount: 10,
+      enrollmentDiscount: 15,
+      campus: 'Ciudad de México',
+      program: 'Ingeniería en Sistemas',
+      modality: 'Presencial',
+      brand: 'Lottus',
+      createdAt: '2025-09-15'
+    },
+    {
+      id: '2',
+      name: 'Proyección Anual 2026',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      intercycleRetention: 88,
+      intracycleRetention: 94,
+      tuitionDiscount: 12,
+      enrollmentDiscount: 18,
+      campus: 'all',
+      program: 'all',
+      modality: 'all',
+      brand: 'all',
+      createdAt: '2025-09-10'
+    }
+  ];
+
+  // Función para calcular resultados detallados
+  const calculateDetailedResults = (params: any) => {
+    const baseEnrollment = params.activeEnrollment || 150;
+    const intercycleRate = params.intercycleRetention / 100;
+    const intracycleRate = params.intracycleRetention / 100;
+    const tuitionDiscountRate = params.tuitionDiscount / 100;
+    const enrollmentDiscountRate = params.enrollmentDiscount / 100;
+    
+    // Cálculo de estudiantes
+    const totalRetained = Math.round(baseEnrollment * intercycleRate * intracycleRate);
+    const newStudents = Math.round(totalRetained * 0.3); // 30% nuevos ingresos
+    const returningStudents = totalRetained - newStudents; // RI (incluye RA)
+    
+    // Precios base
+    const baseEnrollmentPrice = 12500;
+    const baseTuitionPrice = 8500;
+    
+    // Cálculos de inscripciones
+    const enrollmentRevenue = totalRetained * baseEnrollmentPrice;
+    const enrollmentDiscountAmount = enrollmentRevenue * enrollmentDiscountRate;
+    const netEnrollmentRevenue = enrollmentRevenue - enrollmentDiscountAmount;
+    
+    // Cálculos de colegiaturas (asumiendo 5 mensualidades por período)
+    const tuitionRevenue = totalRetained * baseTuitionPrice * 5;
+    const tuitionDiscountAmount = tuitionRevenue * tuitionDiscountRate;
+    const netTuitionRevenue = tuitionRevenue - tuitionDiscountAmount;
+    
+    // Totales
+    const totalRevenue = enrollmentRevenue + tuitionRevenue;
+    const totalDiscount = enrollmentDiscountAmount + tuitionDiscountAmount;
+    const totalNetRevenue = netEnrollmentRevenue + netTuitionRevenue;
+    
+    return {
+      students: {
+        total: totalRetained,
+        newStudents: newStudents,
+        returningStudents: returningStudents
+      },
+      enrollment: {
+        price: baseEnrollmentPrice,
+        discountPercent: params.enrollmentDiscount,
+        revenue: enrollmentRevenue,
+        discountAmount: enrollmentDiscountAmount,
+        netRevenue: netEnrollmentRevenue
+      },
+      tuition: {
+        price: baseTuitionPrice,
+        discountPercent: params.tuitionDiscount,
+        revenue: tuitionRevenue,
+        discountAmount: tuitionDiscountAmount,
+        netRevenue: netTuitionRevenue
+      },
+      totals: {
+        totalRevenue,
+        totalDiscount,
+        totalNetRevenue
+      }
+    };
+  };
+
+  const detailedResults = calculateDetailedResults(newProjection);
 
   // Función para calcular días devengables por mes según modalidad
   const calculateAccrualDays = (month: string, modality: 'presencial' | 'online' | 'sabatina') => {
@@ -143,13 +274,29 @@ const Projections: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Proyecciones Financieras</h1>
             <p className="text-gray-600 mt-2">Cálculo automático con días devengables y análisis de escenarios</p>
           </div>
-          <button 
-            onClick={() => alert('Función de reporte de errores - En desarrollo')}
-            className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-          >
-            <AlertTriangle className="w-4 h-4 mr-2" />
-            Reportar Error
-          </button>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => alert('Función de reporte de errores - En desarrollo')}
+              className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Reportar Error
+            </button>
+            <button 
+              onClick={() => setShowNewProjection(true)}
+              className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nueva Proyección
+            </button>
+            <button 
+              onClick={() => setShowSavedProjections(true)}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Ver Proyecciones Guardadas
+            </button>
+          </div>
         </div>
       </div>
 
@@ -468,7 +615,309 @@ const Projections: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Gestión de Proyecciones Guardadas */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Proyecciones Guardadas</h2>
+            <button 
+              onClick={() => setShowDetailedResults(!showDetailedResults)}
+              className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <Calculator className="w-4 h-4 mr-2" />
+              {showDetailedResults ? 'Ocultar' : 'Ver'} Resultados Detallados
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {savedProjections.map((projection) => (
+              <div key={projection.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-medium text-gray-900">{projection.name}</h3>
+                  <button 
+                    onClick={() => setSelectedProjection(projection)}
+                    className="text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p>Campus: {projection.campus}</p>
+                  <p>Programa: {projection.program}</p>
+                  <p>Período: {projection.startDate} - {projection.endDate}</p>
+                  <p>Creado: {new Date(projection.createdAt).toLocaleDateString('es-MX')}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Resultados Detallados */}
+        {showDetailedResults && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Resultados Detallados</h2>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setActiveResultsTab('summary')}
+                  className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                    activeResultsTab === 'summary'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Resumen
+                </button>
+                <button
+                  onClick={() => setActiveResultsTab('monthly')}
+                  className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                    activeResultsTab === 'monthly'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Mensual
+                </button>
+              </div>
+            </div>
+
+            {activeResultsTab === 'summary' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-blue-700 mb-2">Estudiantes Proyectados</h3>
+                  <p className="text-2xl font-bold text-blue-900">{detailedResults.students.total}</p>
+                  <div className="text-xs text-blue-600 mt-2 space-y-1">
+                    <p>NI: {detailedResults.students.newStudents}</p>
+                    <p>RI: {detailedResults.students.returningStudents}</p>
+                  </div>
+                </div>
+                
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-green-700 mb-2">Ingresos Netos</h3>
+                  <p className="text-2xl font-bold text-green-900">
+                    ${(detailedResults.totals.totalNetRevenue / 1000000).toFixed(1)}M
+                  </p>
+                  <div className="text-xs text-green-600 mt-2 space-y-1">
+                    <p>Inscripciones: ${(detailedResults.enrollment.netRevenue / 1000000).toFixed(1)}M</p>
+                    <p>Colegiaturas: ${(detailedResults.tuition.netRevenue / 1000000).toFixed(1)}M</p>
+                  </div>
+                </div>
+                
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-red-700 mb-2">Descuentos Totales</h3>
+                  <p className="text-2xl font-bold text-red-900">
+                    ${(detailedResults.totals.totalDiscount / 1000000).toFixed(1)}M
+                  </p>
+                  <div className="text-xs text-red-600 mt-2 space-y-1">
+                    <p>Inscripciones: {detailedResults.enrollment.discountPercent}%</p>
+                    <p>Colegiaturas: {detailedResults.tuition.discountPercent}%</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeResultsTab === 'monthly' && (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mes</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estudiantes</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inscripciones</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Colegiaturas</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Neto</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {Array.from({ length: 6 }, (_, i) => {
+                      const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'];
+                      return (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">{monthNames[i]}</td>
+                          <td className="px-4 py-3 text-sm text-gray-900">{detailedResults.students.total}</td>
+                          <td className="px-4 py-3 text-sm text-gray-900">
+                            ${(detailedResults.enrollment.netRevenue / 1000).toLocaleString()}K
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-900">
+                            ${(detailedResults.tuition.netRevenue / 1000).toLocaleString()}K
+                          </td>
+                          <td className="px-4 py-3 text-sm font-medium text-green-600">
+                            ${((detailedResults.totals.totalNetRevenue / 6) / 1000).toLocaleString()}K
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Modal para nueva proyección */}
+      {showNewProjection && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Nueva Proyección</h3>
+                <button 
+                  onClick={() => setShowNewProjection(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                  <input
+                    type="text"
+                    value={newProjection.name}
+                    onChange={(e) => setNewProjection(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    placeholder="Nombre de la proyección"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Campus</label>
+                  <select
+                    value={newProjection.campus}
+                    onChange={(e) => setNewProjection(prev => ({ ...prev, campus: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="all">Todos los Campus</option>
+                    <option value="Ciudad de México">Ciudad de México</option>
+                    <option value="Guadalajara">Guadalajara</option>
+                    <option value="Monterrey">Monterrey</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
+              <button 
+                onClick={() => setShowNewProjection(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={() => {
+                  console.log('Crear proyección:', newProjection);
+                  setShowNewProjection(false);
+                }}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                Crear Proyección
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para proyecciones guardadas */}
+      {showSavedProjections && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Proyecciones Guardadas</h3>
+                <button 
+                  onClick={() => setShowSavedProjections(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                {savedProjections.map((projection) => (
+                  <div key={projection.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-gray-900">{projection.name}</h4>
+                        <p className="text-sm text-gray-600">
+                          {projection.campus} - {projection.program}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Creado: {new Date(projection.createdAt).toLocaleDateString('es-MX')}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => setSelectedProjection(projection)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                        >
+                          Ver Detalle
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de detalle de proyección */}
+      {selectedProjection && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">{selectedProjection.name}</h3>
+                <button 
+                  onClick={() => setSelectedProjection(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Campus</label>
+                  <p className="text-sm text-gray-900">{selectedProjection.campus}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Programa</label>
+                  <p className="text-sm text-gray-900">{selectedProjection.program}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Modalidad</label>
+                  <p className="text-sm text-gray-900">{selectedProjection.modality}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+                  <p className="text-sm text-gray-900">{selectedProjection.brand}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Retención Interciclo</label>
+                  <p className="text-sm text-gray-900">{selectedProjection.intercycleRetention}%</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Retención Intraciclo</label>
+                  <p className="text-sm text-gray-900">{selectedProjection.intracycleRetention}%</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Descuento Colegiaturas</label>
+                  <p className="text-sm text-gray-900">{selectedProjection.tuitionDiscount}%</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Descuento Inscripciones</label>
+                  <p className="text-sm text-gray-900">{selectedProjection.enrollmentDiscount}%</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
